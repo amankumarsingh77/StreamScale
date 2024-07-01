@@ -43,8 +43,9 @@ export default function Home() {
           avatarUrls={avatarUrls}
         />
         <div className="flex gap-1">
-          {Array.from({ length: 5 }, (_) => (
+          {Array.from({ length: 5 }, (_, index) => (
             <img
+              key={index}
               src="/star.png"
               width={20}
               height={20}
