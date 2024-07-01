@@ -4,10 +4,15 @@ const {
   getUser,
   userExist,
   getUserById,
+  updateUser,
 } = require("../services/user");
 const jwt = require("jsonwebtoken");
 const express = require("express");
-const { registerSchema, loginSchema } = require("../utils/inputvalidation");
+const {
+  registerSchema,
+  loginSchema,
+  updateUserSchema,
+} = require("../utils/inputvalidation");
 const { protectedRoute } = require("../middleware/auth");
 const router = express.Router();
 
@@ -115,6 +120,24 @@ router.get("/me", protectedRoute, async (req, res) => {
     message: "User found",
     status: 200,
     user,
+  });
+});
+
+router.patch("/update", protectedRoute, async (req, res) => {
+  const { error, value } = updateUserSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      message: "Validation error",
+      status: 400,
+      error: error.details[0].message,
+    });
+  }
+  const { username, fullname, picture, message } = value;
+  const userId = req.userId;
+  const result = await updateUser(userId, username, fullname, picture, message);
+  res.status(result.status).json({
+    message: result.message,
+    status: result.status,
   });
 });
 

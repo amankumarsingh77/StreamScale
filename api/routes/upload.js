@@ -3,7 +3,7 @@ const { generatePresignedUrl } = require("../services/aws");
 const { addFile } = require("../services/file");
 const { isAllowedToUpload } = require("../services/user");
 
-const { AddFileSchema } = require("../utils/inputvalidation");
+const { addFileSchema } = require("../utils/inputvalidation");
 const { protectedRoute } = require("../middleware/auth");
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.get("/url", protectedRoute, async (req, res) => {
 });
 
 router.post("/add", protectedRoute, async (req, res) => {
-  const { error, value } = AddFileSchema.validate(req.body);
+  const { error, value } = addFileSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
       message: "Validation error",

@@ -164,7 +164,7 @@ const DragAndDropUpload: React.FC<
             }
           })
         } catch (err: any) {
-          console.log(err.response)
+          console.error(err.response)
           if (
             err &&
             err.response &&

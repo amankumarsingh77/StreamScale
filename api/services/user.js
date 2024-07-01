@@ -50,10 +50,39 @@ const isAllowedToUpload = async (userId) => {
   }
 };
 
+const updateUser = async (userId, username, fullname, picture, message) => {
+  try {
+    const emailExist = await userExist(username, null);
+    if (emailExist) {
+      return {
+        message: "Username already exists",
+        status: 400,
+      };
+    }
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { username, fullname, picture, message }
+    );
+    if (!user) {
+      return {
+        message: "Could not update user details",
+        status: 400,
+      };
+    }
+    return {
+      message: "Successfully updated user",
+      status: 200,
+    };
+  } catch (error) {
+    console.error("Error updating user", error);
+  }
+};
+
 module.exports = {
   createUser,
   getUser,
   getUserById,
   userExist,
   isAllowedToUpload,
+  updateUser,
 };

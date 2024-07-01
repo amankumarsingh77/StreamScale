@@ -19,6 +19,9 @@ export default function AvatarDropdown() {
     await logout()
     router.push('/login')
   }
+  const profileHandler = () => {
+    router.push('/profile')
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -31,7 +34,10 @@ export default function AvatarDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuGroup>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={profileHandler}
+            className="cursor-pointer"
+          >
             Profile
           </DropdownMenuItem>
           <DropdownMenuItem
