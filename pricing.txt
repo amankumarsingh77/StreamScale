@@ -1,0 +1,67 @@
+AWS Fargate:
+	Number of tasks or pods: 33 per day * (730 hours in a month / 24 hours in a day) = 1003.75 per month
+        Average duration: 22 minutes = 0.37 hours
+	1,003.75 tasks x 4 vCPU x 0.37 hours x 0.04048 USD per hour = 60.14 USD for vCPU hours
+	1,003.75 tasks x 8.00 GB x 0.37 hours x 0.004445 USD per GB per hour = 13.21 USD for GB hours
+	20 GB - 20 GB (no additional charge) = 0.00 GB billable ephemeral storage per task
+	60.14 USD for vCPU hours + 13.21 USD for GB hours = 73.35 USD total
+	Fargate cost (monthly): 73.35 USD for 1000 videos a month
+
+or
+
+AWS EC2:
+	For instance utilization over the breakeven point, 459.974490 hours, it is more cost effective to choose EC2 Instance Savings Plans instances than On-Demand Instances.
+	1 EC2 Instance Savings Plans instances x 0.000000 upfront cost = 0.000000 USD
+	EC2 Instance Savings Plans instances (upfront): 0.000000 USD
+
+	1 instances x 730 hours in a month = 730 EC2 Instance Savings Plans instance hours per month
+	730 EC2 Instance Savings Plans instance hours per month x 0.098800 USD = 72.124000 USD
+	Normalized EC2 Instance Savings Plans instances (monthly): 72.124000 USD
+
+	0 On-Demand instance hours per month x 0.156800 USD = 0.000000 USD
+	On-Demand (monthly): 0.000000 USD
+
+	0.000000 USD On-Demand (monthly) + 72.124000 USD Normalized EC2 Instance Savings Plans instances (monthly) = 72.124000 USD
+	Total cost (monthly): 72.124000 USD
+
+	*Please note that you will pay an hourly commitment for Savings Plans and your usage will be accrued at a discounted rate against this commitment.
+
+
+AWS S3:(lets say we are uploading 1000 files of 1-2gb):
+	negligible as after we upload the file with delete as soon as the file is done transcoding
+AWS SQS:
+	Free for first 1mil requests
+	further $0.40/mil for standard queues and $0.50/mil for FIFO queues
+Cloudflare r2:
+	Cost per gb/month = $0.015
+	Cost for 1tb/month = $15
+	Cost of Class A Operations (PUT,COPY) = First mil/month free or $4.50 / million requests
+	Cost for 3 mil Class A Operations requests = $9
+	Cost of Class B Operations (READ) = First 10mil/month free or $0.36 / million requests 
+	Lets assume each 1hr video = 400 segments
+	400x1000 = 400000 segments
+	Lets assume each segment is streamed 100 times/month = 400000 x 100 = 40,000,000
+	1mil = $0.36
+	40,000,000 - 10,000,000 = (30,000,000/1,000,000) * $0.36 = $10.8
+	Total cost  = $15+$9+$10.8= $34.8
+
+Total cost for now = $72.124 + $34.8 = $106.924
+
+
+Cheapest transcoding service:
+	each minute= $0.01500
+	each 1hr video = 60 x 0.01500 = $0.90
+	for 1000 videos = $0.90 x 1000 = $900
+
+
+
+
+
+Cost for FULL AWS SETUP
+
+AWS Elastic Transcode:
+	Cost of per minute = $0.03
+	Cost of per hours = $0.03 x 60 = $1.8
+	Cost for 1000 videos = $1.8 x 1000 = $1800
+I will leave it here as it has already exceeded by ~59x for just transcoding
+
