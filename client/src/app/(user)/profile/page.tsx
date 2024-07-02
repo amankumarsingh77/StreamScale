@@ -28,15 +28,6 @@ interface UserProps {
 export default function Page() {
   const [userData, setUserData] =
     useState<UserProps | null>(null)
-
-  const [formValues, setFormValues] = useState<
-    Partial<UserProps>
-  >({
-    username: '',
-    picture: '',
-    fullname: '',
-    message: ''
-  })
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -44,12 +35,6 @@ export default function Page() {
       try {
         const data = await fetchUser()
         setUserData(data.user)
-        setFormValues({
-          username: data.user.username,
-          picture: data.user.picture,
-          fullname: data.user.fullname,
-          message: data.user.message
-        })
       } catch (error) {
         setUserData(null)
       }
@@ -63,10 +48,13 @@ export default function Page() {
     >
   ) => {
     const { name, value } = e.target
-    setFormValues((prevState) => ({
-      ...prevState,
-      [name]: value
-    }))
+    setUserData((prevState) => {
+      if (!prevState) return prevState
+      return {
+        ...prevState,
+        [name]: value
+      }
+    })
   }
 
   const updateHandler = async () => {
@@ -74,15 +62,13 @@ export default function Page() {
     try {
       await instance.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/user/update`,
-        formValues
-      )
-      setUserData((prevData) => {
-        if (!prevData) return prevData
-        return {
-          ...prevData,
-          ...formValues
+        {
+          username: userData?.username,
+          fullname: userData?.fullname,
+          message: userData?.message,
+          picture: userData?.picture
         }
-      })
+      )
       toast({
         title: 'Success',
         description: 'Profile updated successfully'
@@ -96,7 +82,7 @@ export default function Page() {
     <ProtectedRoute>
       <div className="w-full px-8 py-6">
         <div>
-          <Typography variant="h3">Settings</Typography>
+          <Typography variant="h3">Profile</Typography>
           <Typography>
             Manage your profile and subscriptions
           </Typography>
@@ -190,7 +176,7 @@ export default function Page() {
           <Typography>Manage your subscription</Typography>
           <div className="flex flex-col items-center w-full">
             <Typography className="mt-10" variant={'h3'}>
-              Comming soon....
+              Coming soon....
             </Typography>
           </div>
         </div>

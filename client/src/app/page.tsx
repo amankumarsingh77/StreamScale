@@ -6,8 +6,7 @@ import {
   Timer,
   Workflow,
   HandCoins,
-  MonitorPlay,
-  Star
+  MonitorPlay
 } from 'lucide-react'
 import Link from 'next/link'
 import Marquee from '@/components/magicui/marquee'
@@ -15,8 +14,6 @@ import ReviewCard from '@/components/home/ReviewCard'
 import WorkflowAnimated from '@/components/home/WorkFlowAnimated'
 import reviews from '@/constants/reviews'
 import AvatarCircles from '@/components/magicui/avatar-circles'
-import { StarFilledIcon } from '@radix-ui/react-icons'
-import Image from 'next/image'
 
 const firstRow = reviews.slice(0, reviews.length / 2)
 const secondRow = reviews.slice(reviews.length / 2)
