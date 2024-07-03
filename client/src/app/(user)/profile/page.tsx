@@ -145,7 +145,7 @@ export default function Page() {
                 placeholder="aman@gmail.com"
               />
             </div>
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">Request Message</Label>
             <Textarea
               name="message"
               defaultValue={userData?.message}

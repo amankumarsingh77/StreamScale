@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -20,6 +20,7 @@ import { SignUpItemLists } from '@/constants/authitems'
 import { Textarea } from '@/components/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { instance } from '@/api/apiInstance'
+import { useAuth } from '@/context/AuthContext'
 
 const FormSchema = z.object({
   username: z
@@ -62,6 +63,12 @@ export default function Page() {
       message: ''
     }
   })
+  const { user } = useAuth()
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user])
 
   const onSubmit = async (
     data: z.infer<typeof FormSchema>

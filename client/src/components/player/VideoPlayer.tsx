@@ -2,7 +2,6 @@
 import { useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import Video from 'next-video'
-import { useApi } from '@/lib/hooks/useApi'
 import VideoDetailsCard from './VideoDetailsCard'
 import { instance } from '@/api/apiInstance'
 
@@ -17,7 +16,6 @@ const VideoPlayer: React.FC = () => {
   const id = searchParams.get('id')
   const [loading, setLoading] = useState(true)
   const [fileData, setFileData] = useState<FileData>()
-  // const { data, error, loading, makeRequest } = useApi()
 
   useEffect(() => {
     const fetchData = async () => {
