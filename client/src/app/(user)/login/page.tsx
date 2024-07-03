@@ -110,6 +110,11 @@ export default function Page() {
                   <FormLabel>{item.name}</FormLabel>
                   <FormControl>
                     <Input
+                      type={
+                        item.name === 'password'
+                          ? 'password'
+                          : 'text'
+                      }
                       placeholder={item.placeholder}
                       {...field}
                     />
