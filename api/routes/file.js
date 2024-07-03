@@ -13,11 +13,13 @@ router.get("/getfile", protectedRoute, async (req, res) => {
   const fileId = req.query.fileId;
   const file = await getFile(fileId);
   if (!file) {
-    res.status(404).json({
+    return res.status(404).json({
       message: "File not found",
       status: 404,
     });
   }
+  const hlsurl = await getHlsUrl(file.path);
+  file.hlsurl = hlsurl;
   res.status(200).json({
     message: "File found",
     status: 200,
@@ -35,14 +37,14 @@ router.get("/hlsurl", protectedRoute, async (req, res) => {
   }
   const file = await getFile(id);
   if (!file) {
-    res.status(404).json({
+    return res.status(404).json({
       message: "File not found",
       status: 404,
     });
   }
   const hlsurl = await getHlsUrl(file.path);
   if (!hlsurl) {
-    res.status(404).json({
+    return res.status(404).json({
       message: "HLS URL not found",
       status: 404,
     });
@@ -58,7 +60,7 @@ router.get("/getfiles", protectedRoute, async (req, res) => {
   const userId = req.userId;
   const files = await getFiles(userId);
   if (!files) {
-    res.status(404).json({
+    return res.status(404).json({
       message: "Files not found",
       status: 404,
     });

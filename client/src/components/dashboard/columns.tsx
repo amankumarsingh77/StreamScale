@@ -23,6 +23,14 @@ type File = {
   status: 'queued' | 'transcoding' | 'done' | 'failed'
 }
 
+const formatFileSize = (size: number): string => {
+  if (size > 1024 * 1024) {
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`
+  } else {
+    return `${(size / 1024).toFixed(2)} KB`
+  }
+}
+
 const handleDelete = async (
   fileId: string,
   toast: any,
@@ -113,7 +121,9 @@ export const columns = (
     header: () => <div className="text-right">Size</div>,
     cell: ({ row }) => {
       return (
-        <div className="text-right font-medium">{`${row.getValue('size')}M`}</div>
+        <div className="text-right font-medium">
+          {formatFileSize(row.getValue('size'))}
+        </div>
       )
     }
   },

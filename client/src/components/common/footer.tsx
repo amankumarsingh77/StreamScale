@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Typography from '@components/ui/typography'
+import { GitHubLogoIcon } from '@radix-ui/react-icons'
 
 export function Footer() {
   return (
@@ -41,6 +42,12 @@ export function Footer() {
             <Typography variant="p">
               Privacy Policy
             </Typography>
+          </Link>
+          <Link
+            target="_blank"
+            href="https://github.com/amankumarsingh77/StreamScale"
+          >
+            <GitHubLogoIcon className="w-6 h-6" />
           </Link>
         </div>
       </div>
