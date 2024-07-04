@@ -3,6 +3,7 @@
 /worker/node_modules/
 node_modules/
 
+/test/
 # Ignore build artifacts and distribution directories
 /build/
 /dist/
