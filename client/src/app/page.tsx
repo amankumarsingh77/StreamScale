@@ -14,6 +14,7 @@ import ReviewCard from '@/components/home/ReviewCard'
 import WorkflowAnimated from '@/components/home/WorkFlowAnimated'
 import reviews from '@/constants/reviews'
 import AvatarCircles from '@/components/magicui/avatar-circles'
+import ShineBorder from '@/components/magicui/shine-border'
 
 const firstRow = reviews.slice(0, reviews.length / 2)
 const secondRow = reviews.slice(reviews.length / 2)
@@ -55,11 +56,18 @@ export default function Home() {
           transcoding and streaming solutions for modern
           needs.
         </Typography>
-        <Link href="/login">
-          <Button size="tiny" variant="ghost">
-            {`Get Started`}
-          </Button>
-        </Link>
+        <ShineBorder
+          borderWidth={2}
+          className="text-center w-fit text-2xl font-bold capitalize"
+          color={['#A07CFE', '#FE8FB5', '#FFBE7B']}
+        >
+          <Link href="/login">
+            <Button
+              className="w-40  "
+              variant="ghost"
+            >{`Get Started`}</Button>
+          </Link>
+        </ShineBorder>
         <WorkflowAnimated className="min-w-full" />
       </div>
       <div className="flex flex-col md:pt-24 md:gap-36 gap-24 items-center">
