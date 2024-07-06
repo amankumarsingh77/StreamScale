@@ -13,7 +13,7 @@ export function Footer() {
           >
             <img src="/logo.svg" className="mr-3" />
             <Typography className="!text-white !text-base font-medium ">
-              Pandem
+              StreamScale
             </Typography>
           </Link>
         </div>
