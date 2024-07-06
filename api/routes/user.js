@@ -28,7 +28,7 @@ router.post("/register", async (req, res) => {
         error: error.details[0].message,
       });
     }
-    const { username, password, email, message } = value;
+    const { username, password, email, message, fullname } = value;
     const userExists = await userExist(username, email);
     if (userExists) {
       return res.status(400).json({
@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
       });
     }
     const hashedpassword = await passwordEncrypt(password);
-    await createUser(username, hashedpassword, email, message);
+    await createUser(username, hashedpassword, email, message, fullname);
     res.status(200).json({
       message: "User created successfully",
       status: 200,

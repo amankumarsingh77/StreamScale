@@ -5,7 +5,7 @@ import Video from 'next-video'
 import VideoDetailsCard from './VideoDetailsCard'
 import { instance } from '@/api/apiInstance'
 
-interface FileData {
+export interface FileData {
   file: {
     hlsurl: string
   }

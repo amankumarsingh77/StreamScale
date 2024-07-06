@@ -47,7 +47,10 @@ const FormSchema = z.object({
     })
     .max(100, {
       message: 'Message must be at most 100 characters.'
-    })
+    }),
+  fullname: z
+    .string()
+    .min(2, { message: 'Minimum 2 characters required' })
 })
 
 export default function Page() {
@@ -60,7 +63,8 @@ export default function Page() {
       username: '',
       email: '',
       password: '',
-      message: ''
+      message: '',
+      fullname: ''
     }
   })
   const { user } = useAuth()
@@ -159,6 +163,7 @@ export default function Page() {
             className="w-full flex justify-center items-center gap-2 py-3 px-4
               text-gray-900"
             type="button"
+            disabled={true}
           >
             <Image
               src="/google.svg"

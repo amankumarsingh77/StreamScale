@@ -1,5 +1,5 @@
 const SignUpItemLists: Array<{
-  name: 'email' | 'password' | 'username'
+  name: 'email' | 'password' | 'username' | 'fullname'
   type: string
   placeholder: string
 }> = [
@@ -17,6 +17,11 @@ const SignUpItemLists: Array<{
     name: 'password',
     type: 'password',
     placeholder: 'password'
+  },
+  {
+    name: 'fullname',
+    type: 'text',
+    placeholder: 'fullname'
   }
 ]
 

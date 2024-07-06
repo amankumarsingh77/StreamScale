@@ -1,8 +1,8 @@
 const { User } = require("../models/user");
 
-const createUser = async (username, password, email, message) => {
+const createUser = async (username, password, email, message, fullname) => {
   try {
-    const user = new User({ username, password, email, message });
+    const user = new User({ username, password, email, message, fullname });
     await user.save();
     return user;
   } catch (error) {
