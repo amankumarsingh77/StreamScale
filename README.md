@@ -28,9 +28,7 @@
 3.  [Features](#features)
 4.  [Quick Start](#quick-start)
 5.  [Cloud Setup](#cloud-setup)
-6.  [Snippets (Code to Copy)](#snippets)
-7.  [Assets](#links)
-8.  [More](#more)
+6.  [Connect With Me](#connect-with-me)
 
 ## <a name="introduction">🤖 Introduction</a>
 
