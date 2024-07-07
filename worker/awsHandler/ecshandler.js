@@ -1,3 +1,4 @@
+const { FileStatus } = require("../utils/constants");
 const { ecs } = require("./config");
 const {
   clusterArn,
@@ -21,7 +22,7 @@ const startECSTask = async (s3Bucket, s3Key, receiptHandle) => {
     await incrementRunningTasks();
     const params = createEcsParams(s3Bucket, s3Key);
     console.log(s3Key, "Transcoding video");
-    await sendWebhookNotification("transcoding", s3Key);
+    await sendWebhookNotification(FileStatus.TRANSCODING, s3Key);
     const data = await ecs.runTask(params).promise();
     await deleteSQSMessage(receiptHandle);
     const currentTaskArn = data.tasks[0].taskArn;
@@ -68,7 +69,7 @@ const monitorTaskStatus = async (taskArn, s3Bucket, s3Key) => {
       await decrementRunningTasks();
       await sendWebhookNotification(status, s3Key);
 
-      if (status === "done") {
+      if (status === FileStatus.DONE) {
         await deleteS3Video(s3Bucket, s3Key);
         console.log("ECS task completed successfully:", taskArn);
       } else {
@@ -87,7 +88,10 @@ const monitorTaskStatus = async (taskArn, s3Bucket, s3Key) => {
       const task = data.tasks[0];
 
       if (task.lastStatus === "STOPPED") {
-        const status = task.containers[0].exitCode === 0 ? "done" : "failed";
+        const status =
+          task.containers[0].exitCode === 0
+            ? FileStatus.DONE
+            : FileStatus.FAILED;
         console.log("ECS task stopped with status:", status);
         await handleTaskCompletion(status);
       } else {
