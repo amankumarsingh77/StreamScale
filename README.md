@@ -36,7 +36,8 @@
 
 StreamScale is an open-source tool designed to simplify the process of transcoding and streaming videos. Whether you're looking to convert video files into different formats or stream them seamlessly across various devices, StreamScale provides a robust solution. Built with NodeJS (API,Worker), NexJS (frontend), it offers scalability and efficiency, making it ideal for developers and organizations needing reliable video processing capabilities.
 
-![architecture-diagram](https://github.com/amankumarsingh77/healthcare/assets/145339995/ee7c5c59-71c0-450c-8dce-bf3cec595ab2)
+
+![architecture diagram](https://github.com/amankumarsingh77/StreamScale/assets/145339995/20084f05-0a96-4f32-86f4-3307b54f47f1)
 
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
