@@ -259,32 +259,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
             "cpu": 0,
             "portMappings": [],
             "essential": true,
-            "environment": [
-                {
-                    "name": "R2_ACCESS_KEY_ID",
-                    "value": "Your R2 Access Key ID"
-                },
-                {
-                    "name": "R2_SECRET_ACCESS_KEY",
-                    "value": "Your R2 SECRET ACCESS KEY"
-                },
-                {
-                    "name": "R2_ENDPOINT",
-                    "value": "Your R2 Api Endpoints"
-                },
-                {
-                    "name": "AWS_REGION",
-                    "value": "Your AWS s3 bucket region"
-                },
-                {
-                    "name": "AWS_ACCESS_KEY_ID",
-                    "value": "Your AWS Access Key ID"
-                },
-                {
-                    "name": "AWS_SECRET_ACCESS_KEY",
-                    "value": "Your R2 SECRET ACCESS KEY"
-                }
-            ],
             "mountPoints": [],
             "volumesFrom": [],
             "logConfiguration": {
