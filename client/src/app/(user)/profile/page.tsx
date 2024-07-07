@@ -142,7 +142,7 @@ export default function Page() {
                 name="email"
                 type="text"
                 disabled
-                placeholder="aman@gmail.com"
+                placeholder={userData?.email}
               />
             </div>
             <Label htmlFor="bio">Request Message</Label>
