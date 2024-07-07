@@ -27,7 +27,7 @@ const deleteStatus = async (key) => {
 };
 
 const getQueuedTasks = async () => {
-  return await upstashRedis.get("taskQueue");
+  return await upstashRedis.lpop("taskQueue");
 };
 
 const setQueueTask = async (s3Bucket, s3Key, receiptHandle) => {

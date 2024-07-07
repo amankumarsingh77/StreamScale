@@ -1,4 +1,5 @@
 const { FileStatus } = require("../utils/constants");
+const { getRunningTasks, getQueuedTasks } = require("../utils/redis");
 const { ecs } = require("./config");
 const {
   clusterArn,
@@ -11,9 +12,9 @@ const { deleteSQSMessage } = require("./sqshandler");
 const {
   incrementRunningTasks,
   decrementRunningTasks,
-  checkAndStartNextTask,
 } = require("./taskManager");
 const { sendWebhookNotification } = require("./webhook");
+const maxRunningTasks = require("./constants").maxRunningTasks;
 
 const CHECK_INTERVAL = 5000;
 
@@ -34,7 +35,17 @@ const startECSTask = async (s3Bucket, s3Key, receiptHandle) => {
     await checkAndStartNextTask();
   }
 };
-// The EcsTaskParams must be similar to the taskDefinition configured in the ECS Cluster on AWS
+
+const checkAndStartNextTask = async () => {
+  const runningTasks = await getRunningTasks();
+  if (runningTasks >= maxRunningTasks) return;
+  const nextTask = await getQueuedTasks();
+  if (nextTask) {
+    const { s3Bucket, s3Key, receiptHandle } = nextTask;
+    await startECSTask(s3Bucket, s3Key, receiptHandle);
+  }
+};
+
 const createEcsParams = (s3Bucket, s3Key) => ({
   cluster: clusterArn,
   taskDefinition: taskArn,
@@ -52,9 +63,21 @@ const createEcsParams = (s3Bucket, s3Key) => ({
       {
         name: "transcode-image",
         environment: [
+          { name: "AWS_REGION", value: process.env.AWS_REGION },
+          { name: "AWS_ACCESS_KEY_ID", value: process.env.AWS_ACCESS_KEY_ID },
+          {
+            name: "AWS_SECRET_ACCESS_KEY",
+            value: process.env.AWS_SECRET_ACCESS_KEY,
+          },
           { name: "S3_BUCKET", value: s3Bucket },
           { name: "S3_KEY", value: s3Key },
           { name: "R2_BUCKET", value: process.env.R2_BUCKET },
+          { name: "R2_ACCESS_KEY_ID", value: process.env.R2_ACCESS_KEY_ID },
+          {
+            name: "R2_SECRET_ACCESS_KEY",
+            value: process.env.R2_SECRET_ACCESS_KEY,
+          },
+          { name: "R2_ENDPOINT", value: process.env.R2_ENDPOINT },
         ],
       },
     ],

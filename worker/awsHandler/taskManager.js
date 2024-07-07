@@ -1,18 +1,8 @@
-const { getRunningTasks, updateRunningTasks, getQueuedTasks } = require('../utils/redis');
-const { startECSTask } = require('./ecshandler');
-
-const maxRunningTasks = require('./constants').maxRunningTasks;
-
-const checkAndStartNextTask = async () => {
-  const runningTasks = await getRunningTasks();
-  if (runningTasks >= maxRunningTasks) return;
-
-  const nextTask = await getQueuedTasks();
-  if (nextTask) {
-    const { s3Bucket, s3Key, receiptHandle } = nextTask;
-    await startECSTask(s3Bucket, s3Key, receiptHandle);
-  }
-};
+const {
+  getRunningTasks,
+  updateRunningTasks,
+  getQueuedTasks,
+} = require("../utils/redis");
 
 const incrementRunningTasks = async () => {
   let runningTasks = await getRunningTasks();
@@ -27,7 +17,6 @@ const decrementRunningTasks = async () => {
 };
 
 module.exports = {
-  checkAndStartNextTask,
   incrementRunningTasks,
-  decrementRunningTasks
+  decrementRunningTasks,
 };
