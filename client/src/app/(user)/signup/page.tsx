@@ -140,7 +140,13 @@ export default function Page() {
                     id="message"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage>
+                  <Typography className="text-gray-500 text-sm">
+                    ● Transcoding is a expensive job, so we
+                    need to know why you want to use this
+                    application.
+                  </Typography>
+                </FormMessage>
               </FormItem>
             )}
           />
