@@ -186,140 +186,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ### AWS
 
-**Create IAM User with Administrator Access**:
+**Upload the AWS Cloudformation template**:
 
-  - Navigate to the IAM console in the AWS Management Console.
-  - Click on "Users" in the left sidebar.
-  - Click the "Add user" button.
-  - Enter a username.
-  - Select "Programmatic access" for the access type.
-  - Click "Next: Permissions."
-  - Choose "Attach existing policies directly."
-  - Select the checkbox next to "AdministratorAccess."
-  - Complete the setup and save the credentials securely.
-    ![image](https://github.com/amankumarsingh77/healthcare/assets/145339995/57cf3fa8-d6f2-407d-92c9-f17acc2fbdcc)
-
-
-**Create an S3 Bucket**:
-
-   - Open the S3 console in AWS Management Console.
-   - Click "Create bucket."
-   - Enter a unique bucket name.
-   - Select a region.
-   - Configure any other settings as needed.
-   - Click "Create bucket."
-     ![image](https://github.com/amankumarsingh77/healthcare/assets/145339995/8c06f01b-857f-405e-a4dc-9bf71835324e)
-
-    
-**Initialize an SQS Queue**:
-
-   - Navigate to the SQS console in AWS Management Console.
-   - Click "Create queue."
-   - Choose a queue type (Standard or FIFO).
-   - Enter a queue name.
-   - Configure the queue settings as required.
-   - Click "Create queue."
-
-**Create an Event Notification for the S3 Bucket**:
-
-  - Go to the S3 console.
-  - Select the bucket created earlier.
-  - Click on the "Properties" tab.
-  - Scroll down to the "Event notifications" section.
-  - Click "Create event notification."
-  - Enter a name for the event notification.
-  - Specify the event types to trigger the notification (e.g., s3:ObjectCreated:*).
-  - Choose the destination for the event notification (e.g., SQS queue).
-  - Configure additional settings if needed.
-  - Save the event notification.![image](https://github.com/amankumarsingh77/healthcare/assets/145339995/0587da6a-d580-46c4-af3f-530a3814b885)
-
-**Create an ECR repository**:
-  - Navigate to ECR console.
-  - Click on "Create repository".
-  - Fill the basic details and click on "Create repository" (copy the arn as it will be used to configure further).
-
-**Create an ECS Cluster**:
-  - Navigate to the Amazon ECS console in AWS Management Console.
-  - Click on "Clusters" in the left sidebar.
-  - Click the "Create Cluster" button.
-  - Fill in the details as per the requirements (As of now we are using Fargate).
-    ![image](https://github.com/amankumarsingh77/healthcare/assets/145339995/e5a9904b-87c6-4be2-acc9-b5c0f4840781)
-
-**Create a task defination**:
-  - Click on "Task Definitions" in the left sidebar inside the ECS console.
-  - Click the "Create new Task Definition With JSON" button.
-  - Paste the below json with your credentials and create the task defination.
-    ```json
-    {
-    "family": "name your task defination",
-    "containerDefinitions": [
-        {
-            "name": "your-ecr-image-name",
-            "image": "your-ecr-image-url",
-            "cpu": 0,
-            "portMappings": [],
-            "essential": true,
-            "mountPoints": [],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/transcode-task",
-                    "awslogs-create-group": "true",
-                    "awslogs-region": "ap-south-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
-            "systemControls": []
-        }
-    ],
-    "family": "transcode-task",
-    "executionRoleArn": "Your IAM role arn",
-    "networkMode": "awsvpc",
-    "revision": 9,
-    "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
-        }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "EC2",
-        "FARGATE"
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "2048",
-    "memory": "4096",
-    "runtimePlatform": {
-        "cpuArchitecture": "X86_64",
-        "operatingSystemFamily": "LINUX"
-    }
-    ```
+  - Make sure to have your AWS account registered, up and running [here](https://aws.amazon.com/free)
+  - Download the `cloudformation.yml` file from [here](https://github.com/amankumarsingh77/StreamScale/blob/main/cloudformation.yml)
+  - Visit [AWS CloudFormation service](https://ap-southeast-2.console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/getting-started).
+  - Click on the `Create Stack` button.
+  - On the Create Stack page, select `Upload a template file`.
+  - Choose the `cloudformation.yml` file you downloaded earlier, and click on `Next`.
+  - Once the stack creation is complete click on the `output` tab to get all the `aws` required credentials and copy them into your `.env` file.
 
 ### Cloudflare R2
 
