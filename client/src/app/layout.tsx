@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'StreamScale - Information you need during on-call emergencies',
+      'StreamScale - Affordable and scalable video transcoding and streaming service',
     description:
       'Is video transcoding and streaming too expensive? StreamScale is a video transcoding and streaming service that is affordable and scalable.',
     images: ['']
