@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import React from 'react'
 
 interface AvatarCirclesProps {
@@ -20,7 +21,7 @@ const AvatarCircles = ({
       )}
     >
       {avatarUrls.map((url, index) => (
-        <img
+        <Image
           key={index}
           className="h-10 w-10 rounded-full border-2 border-white
             dark:border-gray-800"

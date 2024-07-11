@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Typography from '@components/ui/typography'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import Image from 'next/image'
 
 export function Footer() {
   return (
@@ -11,7 +12,13 @@ export function Footer() {
             href="/"
             className="pointer flex items-center"
           >
-            <img src="/logo.svg" className="mr-3" />
+            <Image
+              width={20}
+              height={20}
+              alt="logo"
+              src="/logo.svg"
+              className="mr-3"
+            />
             <Typography className="!text-white !text-base font-medium ">
               StreamScale
             </Typography>

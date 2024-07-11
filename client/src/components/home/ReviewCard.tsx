@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import React from 'react'
 
 export default function ReviewCard({
@@ -12,6 +13,8 @@ export default function ReviewCard({
   username: string
   body: string
 }) {
+  console.log(img)
+
   return (
     <figure
       className={cn(
@@ -24,10 +27,10 @@ export default function ReviewCard({
       )}
     >
       <div className="flex flex-row items-center gap-2">
-        <img
+        <Image
           className="rounded-full"
-          width="32"
-          height="32"
+          width={32}
+          height={32}
           alt=""
           src={img}
         />

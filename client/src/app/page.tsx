@@ -15,6 +15,7 @@ import WorkflowAnimated from '@/components/home/WorkFlowAnimated'
 import reviews from '@/constants/reviews'
 import AvatarCircles from '@/components/magicui/avatar-circles'
 import ShineBorder from '@/components/magicui/shine-border'
+import Image from 'next/image'
 
 const firstRow = reviews.slice(0, reviews.length / 2)
 const secondRow = reviews.slice(reviews.length / 2)
@@ -42,7 +43,7 @@ export default function Home() {
         />
         <div className="flex gap-1">
           {Array.from({ length: 5 }, (_, index) => (
-            <img
+            <Image
               key={index}
               src="/star.png"
               width={20}

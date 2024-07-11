@@ -12,7 +12,9 @@ const nextConfig = {
       'instagram.fyto1-2.fna.fbcdn.net',
       'assets.vogue.com',
       'm.media-amazon.com',
-      'upload.wikimedia.org'
+      'upload.wikimedia.org',
+      'avatars.githubusercontent.com',
+      'avatar.vercel.sh'
     ]
   }
 }

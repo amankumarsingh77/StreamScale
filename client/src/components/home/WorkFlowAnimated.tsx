@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { AnimatedBeam } from '@/components/magicui/animated-beam'
 import React, { forwardRef, useRef } from 'react'
+import Image from 'next/image'
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -119,43 +120,55 @@ export default function WorkflowAnimated({
 
 const Icons = {
   awss3: () => (
-    <img
+    <Image
+      width={40}
+      height={40}
       src="/s3.png"
       className="rounded-full"
       alt="Amazon S3"
     />
   ),
   awsEcr: () => (
-    <img
-      src="./ecr.png"
+    <Image
+      width={40}
+      height={40}
+      src="/ecr.png"
       className="rounded-full"
       alt="Amazon ECR"
     />
   ),
   awsSqs: () => (
-    <img
-      src="./sqs.png"
+    <Image
+      width={40}
+      height={40}
+      src="/sqs.png"
       className="rounded-full"
       alt="Amazon SQS"
     />
   ),
   awsEcs: () => (
-    <img
-      src="./ecs.png"
+    <Image
+      width={40}
+      height={40}
+      src="/ecs.png"
       className="rounded-full"
       alt="Amazon ECS"
     />
   ),
   nodejs: () => (
-    <img
-      src="./nodejs.png"
+    <Image
+      width={40}
+      height={40}
+      src="/nodejs.png"
       className="rounded-full"
       alt="Node.js"
     />
   ),
   cloudflare: () => (
-    <img
-      src="./cloudflare.png"
+    <Image
+      width={40}
+      height={40}
+      src="/cloudflare.png"
       className="rounded-full"
       alt="Cloudflare"
     />
