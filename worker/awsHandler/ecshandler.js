@@ -61,7 +61,7 @@ const createEcsParams = (s3Bucket, s3Key) => ({
   overrides: {
     containerOverrides: [
       {
-        name: "transcode-image",
+        name: process.env.ECS_CONTAINER_NAME,
         environment: [
           { name: "AWS_REGION", value: process.env.AWS_REGION },
           { name: "AWS_ACCESS_KEY_ID", value: process.env.AWS_ACCESS_KEY_ID },

@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  Creates resources for StreamScale project.
+  Services include ECS cluster, Task Defination, SQS Queue, ECR Repo , S3 for temporary video storage, and a IAM role for access.
+  NOTE: You can change the architecture if using EC2 instead of FARGATE. Make sure to not mess with other settings.
+
+Resources:
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-queue'
+
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SQSQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: !Sub '${AWS::StackName}-sqs-policy'
+        Statement:
+          - Sid: SendUploadEvent
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: SQS:SendMessage
+            Resource: !GetAtt SQSQueue.Arn
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref 'AWS::AccountId'
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:s3:::${AWS::StackName}-bucket'
+              StringLike:
+                s3:object-key: 
+                  - '*.mp4'
+                  - '*.avi'
+                  - '*.mov'
+                  - '*.wmv'
+                  - '*.flv'
+                  - '*.mkv'
+                  - '*.webm'
+                  - '*.m4v'
+                  - '*.mpeg'
+                  - '*.mpg'
+                  - '*.3gp'
+                  - '*.3g2'
+                  - '*.mxf'
+                  - '*.asf'
+                  - '*.vob'
+          - Sid: AllowS3SendMessage
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: SQS:SendMessage
+            Resource: !GetAtt SQSQueue.Arn
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: SQSQueuePolicy
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-bucket'
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Queue: !GetAtt SQSQueue.Arn
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - HEAD
+            AllowedOrigins:
+              - "*"
+
+  IAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${AWS::StackName}-user'
+
+  IAMUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref IAMUser
+
+  IAMUserPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${AWS::StackName}-user-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource: 
+              - !Sub 'arn:aws:s3:::${AWS::StackName}-bucket'
+              - !Sub 'arn:aws:s3:::${AWS::StackName}-bucket/*'
+          - Effect: Allow
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+            Resource: !GetAtt SQSQueue.Arn
+          - Effect: Allow
+            Action:
+              - ecs:*
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource:
+              - !GetAtt ECSTaskExecutionRole.Arn
+              - !GetAtt ECSTaskRole.Arn
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+            Resource:
+              - !Sub 'arn:aws:s3:::${AWS::StackName}-bucket/*'
+      Users: 
+        - !Ref IAMUser
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${AWS::StackName}-cluster'
+
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub '${AWS::StackName}-task'
+      Cpu: '2048'
+      Memory: '4096'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      TaskRoleArn: !Ref ECSTaskRole
+      ContainerDefinitions:
+        - Name: !Sub '${AWS::StackName}-container'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:latest'
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub '/ecs/${AWS::StackName}-task'
+              awslogs-create-group: 'true'
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: 'ecs'
+      RuntimePlatform:
+        CpuArchitecture: X86_64
+        OperatingSystemFamily: LINUX
+
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${AWS::StackName}-repo'
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/${AWS::StackName}-task'
+      RetentionInDays: 30
+
+Outputs:
+  S3BucketName:
+    Description: Name of the created S3 bucket
+    Value: !Ref S3Bucket
+  SQSQueueURL:
+    Description: URL of the created SQS queue
+    Value: !Ref SQSQueue
+  SQSQueueARN:
+    Description: ARN of the created SQS queue
+    Value: !GetAtt SQSQueue.Arn
+  IAMUserName:
+    Description: Name of the created IAM user
+    Value: !Ref IAMUser
+  IAMUserAccessKey:
+    Description: Access Key for the IAM user
+    Value: !Ref IAMUserAccessKey
+  IAMUserSecretKey:
+    Description: Secret Key for the IAM user
+    Value: !GetAtt IAMUserAccessKey.SecretAccessKey
+  ECSClusterARN:
+    Description: ARN of the ECS cluster
+    Value: !GetAtt ECSCluster.Arn
+  ECSTaskDefinitionArn:
+    Description: ARN of the ECS task definition
+    Value: !Ref ECSTaskDefinition
+  ECRRepositoryUri:
+    Description: URI of the ECR repository
+    Value: !GetAtt ECRRepository.RepositoryUri

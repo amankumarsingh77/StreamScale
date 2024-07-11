@@ -48,6 +48,7 @@ const getFile = async (fileId) => {
 const deleteFile = async (fileId) => {
   try {
     const file = await File.findOneAndDelete({ _id: fileId });
+    await User.updateOne({ _id: file.user }, { $pull: { files: fileId } });
     deleteR2Directory(file.path);
   } catch (error) {
     console.error(error);
@@ -56,6 +57,10 @@ const deleteFile = async (fileId) => {
 };
 
 const updateFileStatusByPath = async (path, status) => {
+  if (!path || !status) {
+    console.log("Path or status is missing");
+    return;
+  }
   const file = await File.findOne({ path });
   file.status = status;
   await file.save();
@@ -74,8 +79,11 @@ const updateFileStatus = async (fileId, status) => {
 
 const getFiles = async (userId) => {
   try {
-    const files = await File.find({ user: userId });
-    return files;
+    const user = await User.findById(userId).populate({
+      path: "files",
+      select: "name size type status createdAt",
+    });
+    return user.files;
   } catch (error) {
     console.error(error);
     throw error;
