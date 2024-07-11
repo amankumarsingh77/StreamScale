@@ -20,10 +20,10 @@ const addFileSchema = Joi.object({
 });
 
 const updateUserSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  fullname: Joi.string().required(),
+  username: Joi.string().alphanum().min(3).max(30),
+  fullname: Joi.string(),
   picture: Joi.string(),
-  message: Joi.string().min(20).required(),
+  message: Joi.string().min(20),
 });
 module.exports = {
   registerSchema,

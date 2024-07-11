@@ -28,6 +28,8 @@ interface UserProps {
 export default function Page() {
   const [userData, setUserData] =
     useState<UserProps | null>(null)
+  const [initialData, setInitialData] =
+    useState<UserProps | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function Page() {
       try {
         const data = await fetchUser()
         setUserData(data.user)
+        setInitialData(data.user)
       } catch (error) {
         setUserData(null)
       }
@@ -59,20 +62,31 @@ export default function Page() {
 
   const updateHandler = async () => {
     setError(null)
+    if (!userData || !initialData) return
+
+    const updatedFields: Partial<UserProps> = {}
+    for (const key in userData) {
+      if (
+        userData[key as keyof UserProps] !==
+        initialData[key as keyof UserProps]
+      ) {
+        updatedFields[key as keyof UserProps] =
+          userData[key as keyof UserProps]
+      }
+    }
+
+    console.log(updatedFields)
+
     try {
       await instance.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/user/update`,
-        {
-          username: userData?.username,
-          fullname: userData?.fullname,
-          message: userData?.message,
-          picture: userData?.picture
-        }
+        updatedFields
       )
       toast({
         title: 'Success',
         description: 'Profile updated successfully'
       })
+      setInitialData(userData)
     } catch (error: any) {
       setError(error.response.data.message)
     }
