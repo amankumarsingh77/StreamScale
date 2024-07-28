@@ -28,7 +28,8 @@
 3.  [Features](#features)
 4.  [Quick Start](#quick-start)
 5.  [Cloud Setup](#cloud-setup)
-6.  [Connect With Me](#connect-with-me)
+6.  [Pricing](https://github.com/amankumarsingh77/StreamScale/blob/main/PRICING.md)
+7.  [Connect With Me](#connect-with-me)
 
 ## <a name="introduction">🤖 Introduction</a>
 
