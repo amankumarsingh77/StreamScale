@@ -67,6 +67,8 @@
 ### Total Cost So Far
 - $72.12 (EC2) + $34.80 (Cloudflare R2) = $106.92
 
+---
+
 ### Cheapest Transcoding Service
 - **Cost:**
   - Per minute: $0.01500
