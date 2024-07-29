@@ -33,7 +33,7 @@
 
 ## <a name="introduction">🤖 Introduction</a>
 
-StreamScale is an open-source tool designed to simplify the process of transcoding and streaming videos. Whether you're looking to convert video files into different formats or stream them seamlessly across various devices, StreamScale provides a robust solution. Built with NodeJS (API,Worker), NexJS (frontend), it offers scalability and efficiency, making it ideal for developers and organizations needing reliable video processing capabilities.
+StreamScale is an open-source tool designed to simplify the process of transcoding and streaming videos. Whether you're looking to convert video files into different formats or stream them seamlessly across various devices, StreamScale provides a robust solution. Built with NodeJS (API,Worker), NextJS (frontend), it offers scalability and efficiency, making it ideal for developers and organizations needing reliable video processing capabilities.
 
 
 ![architecture diagram](https://github.com/amankumarsingh77/StreamScale/assets/145339995/20084f05-0a96-4f32-86f4-3307b54f47f1)
@@ -51,7 +51,7 @@ StreamScale is an open-source tool designed to simplify the process of transcodi
 
 ## <a name="features">🔋 Features</a>
 
-👉 **Register **: Users can sign up to get access to the dashboard.
+👉 **Register**: Users can sign up to get access to the dashboard.
 
 👉 **Upload Video Files**: Users can upload videos that will then be transcoded.
 
@@ -216,5 +216,5 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 Q) Want to chat or need assistance with setting up a project?
 
-A) You can connect with me on [twitter](https://x.com/amankumar404) and [gmail](mailto:amankumarsingh7702@gmail.com)
+A) You can connect with me on [X](https://x.com/amankumar404) and [Gmail](mailto:amankumarsingh7702@gmail.com)
 
