@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   },
   isAllowed: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   message: {
     type: String,
