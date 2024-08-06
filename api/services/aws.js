@@ -10,21 +10,26 @@ const s3Client = new S3Client({
   },
 });
 
-const generatePresignedUrl = async (path) => {
-  const encodedpath = path.replace(/[^a-zA-Z0-9_ .\/-]/g, "");
+function sanitizePath(path) {
+  return path.replace(/[^a-zA-Z0-9_.\/-]/g, "");
+}
+
+async function generatePresignedUrl(path) {
+  const sanitizedPath = sanitizePath(path);
+
   try {
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
-      Key: encodedpath,
+      Key: sanitizedPath,
     });
 
     const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     return url;
   } catch (error) {
-    console.error("Error generating presigned URL", error);
-    throw error;
+    console.error("Error generating presigned URL:", error);
+    throw new Error("Failed to generate presigned URL");
   }
-};
+}
 
 module.exports = {
   generatePresignedUrl,

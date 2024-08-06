@@ -1,11 +1,8 @@
 const {
   S3Client,
-  GetObjectCommand,
-  DeleteObjectCommand,
   ListObjectsV2Command,
   DeleteObjectsCommand,
 } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const dotenv = require("dotenv");
 const path = require("path");
 const { r2BucketName } = require("../utils/constants");
@@ -21,7 +18,7 @@ const s3Client = new S3Client({
   },
 });
 
-const getFileDirectory = async (key) => {
+async function getFileDirectory(key) {
   try {
     const dir = path.dirname(key);
     const base = path.basename(key, path.extname(key));
@@ -31,7 +28,7 @@ const getFileDirectory = async (key) => {
     console.error(error);
     throw error;
   }
-};
+}
 
 async function deleteR2Directory(key) {
   try {
