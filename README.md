@@ -90,7 +90,7 @@ Here are some prerequisites that are required to run this project:
 
 ```bash
 git clone https://github.com/amankumarsingh77/StreamScale.git
-cd healthcare
+cd StreamScale
 ```
 
 **Installation**
@@ -208,7 +208,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
   - R2 dev domain is used to serve the static files. But it is disabled by default.
   - You can enable it by going to settings tab of the bucket and clicking on the  "Allow Access" (Not recommended. [Learn more](https://developers.cloudflare.com/r2/buckets/public-buckets/#disable-domain-access)).
   - You can attach your own domain.
-  ![image](https://github.com/amankumarsingh77/healthcare/assets/145339995/22b42f04-1270-46d1-8791-54bb514bb5fb)
+  ![learn more](https://developers.cloudflare.com/r2/buckets/public-buckets/#custom-domains)
 
 
 
