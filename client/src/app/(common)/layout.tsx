@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import '../globals.css'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { Header } from '@/components/common/header'
 import { Footer } from '@/components/common/footer'
@@ -39,30 +39,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className="antialiased"
     >
-      <Analytics />
-      <AuthProvider>
-        <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <main
-              className={`flex min-h-screen flex-col ${inter.className}`}
-            >
-              <Header />
-              <Toaster />
-              <div className="flex flex-1 justify-center w-full">
-                <div className="flex w-full max-w-[1280px] h-full">
-                  {children}
-                </div>
-              </div>
-              <Footer />
-            </main>
-          </ThemeProvider>
-        </body>
-      </AuthProvider>
+      {/* <Analytics /> */}
+      {/* <AuthProvider> */}
+      <body className={inter.className}>
+        <div className="">
+          <div className="">{children}</div>
+        </div>
+      </body>
+      {/* </AuthProvider> */}
     </html>
   )
 }
