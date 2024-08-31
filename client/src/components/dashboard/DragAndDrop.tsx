@@ -139,6 +139,7 @@ const DragAndDropUpload: React.FC<
         fileIndex++
       ) {
         const selectedFile = files[fileIndex]
+        let uploadId: string
         try {
           const presignedUrlResponse = await instance.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/upload/url`,
@@ -146,7 +147,10 @@ const DragAndDropUpload: React.FC<
               params: { fileName: selectedFile.name }
             }
           )
-          const { url } = presignedUrlResponse.data
+          const { url, uploadId: receivedUploadId } =
+            presignedUrlResponse.data.data
+          uploadId = receivedUploadId
+
           await axios.put(url, selectedFile, {
             headers: {
               'Content-Type': selectedFile.type
@@ -189,7 +193,8 @@ const DragAndDropUpload: React.FC<
           {
             fileName: selectedFile.name,
             size: selectedFile.size,
-            type: selectedFile.type
+            type: selectedFile.type,
+            uploadId: uploadId
           }
         )
 
@@ -198,7 +203,7 @@ const DragAndDropUpload: React.FC<
             `${process.env.NEXT_PUBLIC_API_URL}/api/file/getfiles`
           )
           if (response.status === 200) {
-            setUserFiles(response.data.files)
+            setUserFiles(response.data.data.files)
           }
         }
       }

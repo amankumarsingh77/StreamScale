@@ -1,123 +1,83 @@
-const { User } = require("../models/user");
-const jwt = require("jsonwebtoken");
+// services/user.js
+const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const saltRounds = 10;
+const jwt = require("jsonwebtoken");
+const { AppError } = require("../utils/errorHandler");
 
-const createUser = async (username, password, email, message, fullname) => {
+const createUser = async (userData) => {
   try {
-    const user = new User({ username, password, email, message, fullname });
+    const user = new User(userData);
     await user.save();
     return user;
   } catch (error) {
-    console.error("Error creating user", error);
-  }
-};
-
-const getUserById = async (userId) => {
-  try {
-    const user = await User.findById(userId, { password: 0, files: 0 });
-    if (user) return user;
-    return null;
-  } catch (error) {
-    console.error("Error getting user", error);
-  }
-};
-
-const generateAuthToken = async (userId) => {
-  const token = jwt.sign(
-    { userId: userId.toString() },
-    process.env.SECRET_KEY,
-    {
-      expiresIn: "1h",
+    if (error.code === 11000) {
+      throw new AppError(409, "User already exists");
     }
-  );
-  return token;
+    throw new AppError(500, "Error creating user", error.message);
+  }
+};
+
+const isUsernameTaken = async (username) => {
+  const user = await User.findOne({ username });
+  return !!user;
 };
 
 const getUserByUsername = async (username) => {
-  try {
-    const user = await User.findOne({ username });
-    if (user) return user;
-    return null;
-  } catch (error) {
-    console.error("Error getting user", error);
+  const user = await User.findOne({ username });
+  if (!user) {
+    throw new AppError(404, "User not found");
   }
+  return user;
 };
 
-const userExist = async (username, email) => {
-  try {
-    const userExist = await User.findOne({
-      $or: [{ username }, { email }],
-    });
-    return !!userExist;
-  } catch (error) {
-    console.error("Error checking if user exists", error);
+const getUserById = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, "User not found");
   }
+  return user;
+};
+
+const updateUser = async (userId, updateData) => {
+  const user = await User.findByIdAndUpdate(userId, updateData, {
+    new: true,
+    runValidators: true,
+  });
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
+  return { ...user._doc, password: undefined, files: undefined };
+};
+
+const verifyPassword = async (user, password) => {
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) {
+    throw new AppError(401, "Invalid credentials");
+  }
+  return isValid;
+};
+
+const generateAuthToken = (userId) => {
+  return jwt.sign({ userId: userId.toString() }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
 };
 
 const isAllowedToUpload = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    return user.isAllowed;
-  } catch (error) {
-    console.error("Error checking if user is allowed to upload", error);
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, "User not found");
   }
-};
-
-const updateUser = async (userId, username, fullname, picture, message) => {
-  try {
-    const emailExist = await userExist(username, null);
-    if (emailExist) {
-      return {
-        message: "Username already exists",
-        status: 400,
-      };
-    }
-    const user = await User.findOneAndUpdate(
-      { _id: userId },
-      { username, fullname, picture, message }
-    );
-    if (!user) {
-      return {
-        message: "Could not update user details",
-        status: 400,
-      };
-    }
-    return {
-      message: "Successfully updated user",
-      status: 200,
-    };
-  } catch (error) {
-    console.error("Error updating user", error);
-  }
-};
-
-const passwordEncrypt = async (password) => {
-  try {
-    const hashedpassword = await bcrypt.hash(password, saltRounds);
-    return hashedpassword;
-  } catch (error) {
-    console.error("Error hashing the password", error);
-  }
-};
-
-const verifyPassword = async (password, hashedPassword) => {
-  try {
-    const match = await bcrypt.compare(password, hashedPassword);
-    return match;
-  } catch (error) {
-    console.error("Error verifying the password", error);
-  }
+  return user.isAllowed;
 };
 
 module.exports = {
   createUser,
   getUserByUsername,
   getUserById,
-  userExist,
-  isAllowedToUpload,
   updateUser,
-  generateAuthToken,
-  passwordEncrypt,
   verifyPassword,
+  generateAuthToken,
+  isAllowedToUpload,
+  isUsernameTaken,
 };

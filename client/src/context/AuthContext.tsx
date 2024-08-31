@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 'use client'
 import {
   createContext,
@@ -13,10 +12,18 @@ import {
   logout as apiLogout
 } from '../services/authService'
 
+export type User = {
+  id: string
+  username: string
+  email: string
+  fullname: string
+  picture: string
+}
+
 interface AuthContextType {
-  user: object | null
+  user: User | null
   loading: boolean
-  setUser: (user: object | null) => void
+  setUser: (user: User | null) => void
   logout: () => void
 }
 
@@ -31,14 +38,14 @@ interface AuthProviderProps {
 export const AuthProvider: FunctionComponent<
   AuthProviderProps
 > = ({ children }) => {
-  const [user, setUser] = useState<object | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const data = await fetchUser()
-        setUser(data)
+        setUser(data.data as User)
       } catch (error) {
         setUser(null)
       } finally {
@@ -67,7 +74,7 @@ export const AuthProvider: FunctionComponent<
   )
 }
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext)
   if (context === null) {
     throw new Error(

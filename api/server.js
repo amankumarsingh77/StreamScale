@@ -1,20 +1,23 @@
 const express = require("express");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
+const { errorHandler } = require("./utils/errorHandler");
+const { port, mongoose: mongoConfig } = require("./config/env");
 const uploadRouter = require("./routes/upload");
 const userRouter = require("./routes/user");
-const cors = require("cors");
-const mongoose = require("mongoose");
 const webhookRouter = require("./routes/webhook");
 const fileRouter = require("./routes/file");
-require("dotenv").config();
 
 const app = express();
+
 app.use(express.json());
 app.use(
   cors({
     credentials: true,
     origin: [
       "http://localhost:5173",
+      "http://localhost:3001",
       "http://localhost:3000",
       "https://streamscale.aksdev.me",
     ],
@@ -22,15 +25,24 @@ app.use(
 );
 app.use(cookieParser());
 
+// Routes
 app.use("/api/upload", uploadRouter);
 app.use("/api/user", userRouter);
 app.use("/api/webhook", webhookRouter);
 app.use("/api/file", fileRouter);
 
-mongoose.connect(process.env.MONGO_URI);
+// Error handling middleware
+app.use(errorHandler);
 
-const port = 3002;
+// Database connection
+mongoose
+  .connect(mongoConfig.url)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
+// Start server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+module.exports = app;

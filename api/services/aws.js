@@ -1,6 +1,6 @@
+const { aws } = require("../config/env");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-require("dotenv").config();
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -10,12 +10,37 @@ const s3Client = new S3Client({
   },
 });
 
-function sanitizePath(path) {
-  return path.replace(/[^a-zA-Z0-9_.\/-]/g, "");
-}
+const uploadToS3 = async (file, key) => {
+  const params = {
+    Bucket: aws.s3Bucket,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
 
-async function generatePresignedUrl(path) {
-  const sanitizedPath = sanitizePath(path);
+  try {
+    const result = await s3.upload(params).promise();
+    return result.Location;
+  } catch (error) {
+    throw new Error(`Error uploading file to S3: ${error.message}`);
+  }
+};
+
+const deleteFromS3 = async (key) => {
+  const params = {
+    Bucket: aws.s3Bucket,
+    Key: key,
+  };
+
+  try {
+    await s3.deleteObject(params).promise();
+  } catch (error) {
+    throw new Error(`Error deleting file from S3: ${error.message}`);
+  }
+};
+
+const generatePresignedUrl = async (path) => {
+  const sanitizedPath = path.replace(/[^a-zA-Z0-9_.\/-]/g, "");
 
   try {
     const command = new PutObjectCommand({
@@ -29,8 +54,48 @@ async function generatePresignedUrl(path) {
     console.error("Error generating presigned URL:", error);
     throw new Error("Failed to generate presigned URL");
   }
-}
+};
+
+// const sendSQSMessage = async (messageBody) => {
+//   const params = {
+//     QueueUrl: aws.queueUrl,
+//     MessageBody: JSON.stringify(messageBody),
+//   };
+
+//   try {
+//     await sqs.sendMessage(params).promise();
+//   } catch (error) {
+//     throw new Error(`Error sending message to SQS: ${error.message}`);
+//   }
+// };
+
+// const startECSTask = async (containerOverrides) => {
+//   const params = {
+//     cluster: aws.clusterArn,
+//     taskDefinition: aws.taskArn,
+//     launchType: "FARGATE",
+//     networkConfiguration: {
+//       awsvpcConfiguration: {
+//         subnets: [aws.subnets],
+//         securityGroups: [aws.securityGroups],
+//         assignPublicIp: "ENABLED",
+//       },
+//     },
+//     overrides: {
+//       containerOverrides: [containerOverrides],
+//     },
+//   };
+
+//   try {
+//     const result = await ecs.runTask(params).promise();
+//     return result.tasks[0].taskArn;
+//   } catch (error) {
+//     throw new Error(`Error starting ECS task: ${error.message}`);
+//   }
+// };
 
 module.exports = {
+  uploadToS3,
+  deleteFromS3,
   generatePresignedUrl,
 };

@@ -48,7 +48,7 @@ const handleDelete = async (
       `${process.env.NEXT_PUBLIC_API_URL}/api/file/getfiles`
     )
     if (updatedFilesResponse.status === 200) {
-      setFiles(updatedFilesResponse.data.files)
+      setFiles(updatedFilesResponse.data.data.files)
     }
   }
 }
@@ -132,7 +132,7 @@ export const columns = (
     enableHiding: false,
     cell: ({ row }) => {
       const file = row.original
-      const isTranscoded = file.status === 'done'
+      const isTranscoded = file.status === 'done' || 'DONE'
 
       return (
         <DropdownMenu>

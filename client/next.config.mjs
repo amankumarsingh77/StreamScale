@@ -1,4 +1,5 @@
 import { withNextVideo } from 'next-video/process'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   distDir: 'build',
@@ -15,6 +16,20 @@ const nextConfig = {
       'upload.wikimedia.org',
       'avatars.githubusercontent.com',
       'avatar.vercel.sh'
+    ]
+  },
+  async headers() {
+    return [
+      {
+        source: '/embed/:id',
+        headers: [
+          { key: 'X-Frame-Options', value: 'ALLOWALL' },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' *"
+          }
+        ]
+      }
     ]
   }
 }
