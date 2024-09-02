@@ -16,6 +16,7 @@ const loginSchema = Joi.object({
 const addFileSchema = Joi.object({
   fileName: Joi.string().required(),
   uploadId: Joi.string().required(),
+  filePath: Joi.string().required(),
   size: Joi.number().required(),
   type: Joi.string().required(),
 });

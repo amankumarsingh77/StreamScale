@@ -43,12 +43,13 @@ exports.getHlsUrl = async (req, res, next) => {
 
 exports.getUserFiles = async (req, res, next) => {
   try {
-    const files = await fileService.getFilesForUser(req.userId);
-
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const files = await fileService.getFilesForUser(req.userId, page, limit);
     logger.info(`Files retrieved successfully for user: ${req.userId}`);
     res.status(200).json({
       status: "success",
-      data: { files },
+      data: files,
     });
   } catch (error) {
     logger.error(`Error retrieving user files: ${error.message}`);

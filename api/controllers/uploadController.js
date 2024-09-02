@@ -27,15 +27,16 @@ exports.getUploadUrl = async (req, res, next) => {
     }
 
     const fileExtension = path.extname(fileName);
+    const uploadId = uuidv4().replace(/-/g,"");
     const uniqueFileName = `${uuidv4().replace(/-/g, "")}${fileExtension}`;
-    const s3Key = `${req.userId}/${uniqueFileName}`;
+    const s3Key = `${req.userId}/${uploadId}/${uniqueFileName}`;
     const url = await awsService.generatePresignedUrl(s3Key);
 
     logger.info(`Presigned URL generated successfully for file: ${fileName}`);
     res.status(200).json({
       status: "success",
       message: "Presigned URL generated successfully",
-      data: { url, uploadId: uniqueFileName },
+      data: { url, filepath: s3Key, uploadId },
     });
   } catch (error) {
     logger.error(`Error generating presigned URL: ${error.message}`);
@@ -45,8 +46,8 @@ exports.getUploadUrl = async (req, res, next) => {
 
 exports.addFile = async (req, res, next) => {
   try {
-    const { fileName, size, type, uploadId } = req.body;
-    if (!validateFileMetadata(fileName, size, type, uploadId)) {
+    const { fileName, size, type, filePath, uploadId } = req.body;
+    if (!validateFileMetadata(fileName, size, type, filePath, uploadId)) {
       throw new AppError(400, "Invalid file metadata");
     }
 
@@ -57,12 +58,12 @@ exports.addFile = async (req, res, next) => {
         "You are not allowed to add files. Please contact admin."
       );
     }
-    const filePath = `${req.userId}/${uploadId}`;
 
     const file = await fileService.addFile(
       {
         name: fileName,
         path: filePath,
+        uploadId,
         size,
         type,
       },

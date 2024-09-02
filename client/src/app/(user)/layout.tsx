@@ -52,10 +52,10 @@ export default function RootLayout({
             <main
               className={`flex min-h-screen flex-col ${inter.className}`}
             >
-              <LeftNavBar />
               <Header />
               <Toaster />
               <div className="flex flex-1 justify-center w-full">
+                {/* <LeftNavBar /> */}
                 <div className="flex w-full max-w-[1280px] h-full">
                   {children}
                 </div>

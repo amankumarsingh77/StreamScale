@@ -1,0 +1,111 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: amanseam
+service: video-transcoding-workflow-dev
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'ap-south-1'}
+  environment:
+    DYNAMODB_TABLE: ${self:custom.dynamoDbTable}
+    SQS_QUEUE_URL: https://sqs.ap-south-1.amazonaws.com/851725341790/lambda.fifo
+    ECS_CLUSTER_ARN: arn:aws:ecs:ap-south-1:851725341790:cluster/transcode-cluster
+    ECS_TASK_DEFINITION_ARN: arn:aws:ecs:ap-south-1:851725341790:task-definition/transcode-task:9
+    ECS_CONTAINER_NAME: transcode-image
+    SUBNET_IDS: 'subnet-03b29634c50d3308a,subnet-063434a2a591f4bd9,subnet-04ba037c2ede61e24'
+    SECURITY_GROUP_ID: sg-0ab2f27da5b9a9bbe
+    R2_BUCKET: video-transcoder
+    AWS_S3_BUCKET: lambda-test-aman-demo
+    R2_ACCESS_KEY_ID: df0f2fe6540fe24863aa576326caf70a
+    R2_SECRET_ACCESS_KEY: add91f49300e5beee49b932cecfaab9a0439210c2297e7a71ad95ac6764079e7
+    R2_ENDPOINT: https://c53b46b5dd5b90e69d3b386ace1821fd.r2.cloudflarestorage.com
+    R2_CDN_ENDPOINT: https://cdn.streamscale.aksdev.me
+    MAX_RUNNING_TASKS: 5
+    SNS_TOPIC_ARN: arn:aws:sns:ap-south-1:851725341790:streamscale-sns
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.dynamoDbTable}
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource: arn:aws:sqs:${self:provider.region}:851725341790:lambda.fifo
+    - Effect: Allow
+      Action:
+        - ecs:RunTask
+        - ecs:StopTask
+        - ecs:DescribeTasks
+      Resource:
+        - ${self:provider.environment.ECS_TASK_DEFINITION_ARN}
+        - arn:aws:ecs:${self:provider.region}:*:task/*
+    - Effect: Allow
+      Action:
+        - iam:PassRole
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: ${self:provider.environment.SNS_TOPIC_ARN}
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: arn:aws:s3:::${self:provider.environment.AWS_S3_BUCKET}/*
+
+functions:
+  s3Trigger:
+    handler: src/handlers/s3Trigger.handler
+    events:
+      - s3:
+          bucket: ${self:provider.environment.AWS_S3_BUCKET}
+          event: s3:ObjectCreated:*
+          existing: true
+  sqsConsumer:
+    handler: src/handlers/sqsConsumer.handler
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${self:provider.region}:851725341790:lambda.fifo
+          batchSize: 1
+  updateTaskStatus:
+    handler: src/handlers/updateTaskStatus.handler
+    events:
+      - sns: ${self:provider.environment.SNS_TOPIC_ARN}
+  # handleTaskCompletion:
+  #   handler: src/handlers/handleTaskCompletion.handler
+  #   events:
+  #     - sns:
+  #         arn: ${self:provider.environment.SNS_TOPIC_ARN}
+  #         filterPolicy:
+  #           status:
+  #             - COMPLETED
+  #             - FAILED
+
+custom:
+  dynamoDbTable: ${self:service}-${self:provider.stage}-tasks
+
+resources:
+  Resources:
+    TasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamoDbTable}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

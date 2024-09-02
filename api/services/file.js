@@ -50,12 +50,28 @@ const deleteFile = async (fileId) => {
   await deleteR2Directory(file.path);
 };
 
-const getFilesForUser = async (userId) => {
-  const user = await User.findById(userId).populate("files");
+const getFilesForUser = async (userId, page = 1, limit = 10) => {
+  const user = await User.findById(userId);
   if (!user) {
     throw new AppError(404, "User not found");
   }
-  return user.files;
+
+  const skip = (page - 1) * limit;
+
+  const files = await File.find({ _id: { $in: user.files } })
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  const totalFiles = await File.countDocuments({ _id: { $in: user.files } });
+  const totalPages = Math.ceil(totalFiles / limit);
+
+  return {
+    files,
+    currentPage: page,
+    totalPages,
+    totalFiles,
+  };
 };
 
 const getHlsUrl = (key) => {

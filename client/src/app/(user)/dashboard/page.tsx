@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import { instance } from '@/api/apiInstance'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { FileProps } from '@/components/dashboard/DemoListing'
 import Typography from '@/components/ui/typography'
 import {
   Card,
@@ -39,6 +38,13 @@ const bandwidthData = [
   { name: 'Sat', value: 2390 },
   { name: 'Sun', value: 3490 }
 ]
+
+export type FileProps = {
+  _id: string
+  name: string
+  size: number
+  status: 'queued' | 'transcoding' | 'done' | 'failed'
+}
 
 export default function DashboardPage() {
   const [files, setFiles] = useState<FileProps[]>([])

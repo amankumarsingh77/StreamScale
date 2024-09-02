@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,15 +12,16 @@ import {
   Settings,
   LogOut,
   Menu,
-  ChevronRight,
-  BarChart
+  X,
+  BarChart,
+  Search,
+  PlusCircle,
+  HelpCircle,
+  CreditCard,
+  UploadCloud
 } from 'lucide-react'
 import Typography from '@/components/ui/typography'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage
-} from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
@@ -36,15 +37,26 @@ const navItems = [
     label: 'Analytics',
     href: '/analytics'
   },
-  { icon: User, label: 'Profile', href: '/profile' },
+  { icon: UploadCloud, label: 'Upload', href: '/upload' },
   { icon: Settings, label: 'Settings', href: '/settings' }
 ]
 
 const LeftNavBar: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const { user, logout } = useAuth()
-  console.log(user)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+      setIsExpanded(window.innerWidth >= 1024)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () =>
+      window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -59,10 +71,11 @@ const LeftNavBar: React.FC = () => {
     <TooltipProvider>
       <nav
         className={cn(
-          `fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-background
-            border-r border-border`,
-          'transition-all duration-300 ease-in-out pt-16',
-          isExpanded ? 'w-64' : 'w-16'
+          `fixed left-0 top-0 bottom-0 z-40 flex flex-col text-white
+            bg-background border`,
+          'transition-all duration-300 ease-in-out',
+          isExpanded ? 'w-64' : 'w-16',
+          isMobile && !isExpanded && 'w-0'
         )}
       >
         <div className="flex items-center justify-between p-4">
@@ -75,53 +88,53 @@ const LeftNavBar: React.FC = () => {
               />
               <Typography
                 variant="h4"
-                className="font-bold"
+                className="font-bold text-white"
               >
                 StreamScale
               </Typography>
             </div>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleSidebar}
-            className={cn('ml-auto', {
-              'rotate-180': isExpanded
-            })}
-          >
-            <ChevronRight size={24} />
-          </Button>
+          {/* {!isMobile && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleSidebar}
+              className="ml-auto text-white hover:bg-[#24253a]"
+            >
+              {isExpanded ? (
+                <X size={24} />
+              ) : (
+                <Menu size={24} />
+              )}
+            </Button>
+          )} */}
         </div>
 
-        {isExpanded && user && (
-          <div className=" flex items-center">
-            <div>
-              <Typography
-                variant="p"
-                className="font-semibold"
-              >
-                {user.username}
-              </Typography>
-              <Typography
-                variant="h3"
-                className="text-muted-foreground"
-              >
-                {user.email}
-              </Typography>
+        {isExpanded && (
+          <div className="px-4 mb-4">
+            <div className="relative">
+              <Search
+                className="absolute left-2 top-1/2 transform -translate-y-1/2
+                  text-gray-400"
+                size={16}
+              />
+              <Input
+                placeholder="Search"
+                className="bg-background border text-white pl-8"
+              />
             </div>
           </div>
         )}
 
-        <div className="flex-grow p-3">
+        <div className="flex-grow overflow-y-auto">
           {navItems.map((item, index) => (
             <Tooltip key={index} delayDuration={300}>
               <TooltipTrigger asChild>
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center py-2 px-3 mb-2 rounded-md',
-                    `hover:bg-accent hover:text-accent-foreground
-                      transition-colors duration-200`,
+                    'flex items-center py-2 px-4 mb-2',
+                    'hover:bg-[#24253a] transition-colors duration-200',
                     isExpanded
                       ? 'justify-start'
                       : 'justify-center'
@@ -144,15 +157,35 @@ const LeftNavBar: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-4 mt-auto">
+        <div className="mt-auto p-4">
+          {isExpanded && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-white hover:bg-[#24253a] py-2 px-4
+                  mb-2"
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Billing
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-white hover:bg-[#24253a] py-2 px-4
+                  mb-2"
+              >
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Help & Support
+              </Button>
+            </>
+          )}
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <Button
                 onClick={handleLogout}
                 variant="outline"
                 className={cn(
-                  'w-full flex items-center justify-center text-white',
-                  'hover:bg-destructive/10 hover:text-destructive',
+                  `w-full flex items-center justify-center text-white
+                    hover:bg-[#24253a]`,
                   isExpanded ? 'px-4' : 'px-0'
                 )}
               >
@@ -170,6 +203,21 @@ const LeftNavBar: React.FC = () => {
           </Tooltip>
         </div>
       </nav>
+      {isMobile && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleSidebar}
+          className="fixed top-4 left-4 z-50 lg:hidden text-white bg-[#1a1b26]
+            hover:bg-[#24253a]"
+        >
+          {isExpanded ? (
+            <X size={24} />
+          ) : (
+            <Menu size={24} />
+          )}
+        </Button>
+      )}
     </TooltipProvider>
   )
 }

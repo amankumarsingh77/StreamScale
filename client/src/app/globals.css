@@ -70,3 +70,21 @@
     }
   }
 }
+
+@layer components {
+  .main-content {
+    @apply transition-all duration-300 ease-in-out;
+    padding-top: 1rem;
+    
+    @media (min-width: 1024px) {
+      margin-left: 16rem; /* 64px * 4 = 256px = 16rem */
+      width: calc(100% - 16rem);
+    }
+    
+    @media (max-width: 1023px) {
+      margin-left: 0;
+      width: 100%;
+      padding-left: 3rem; /* Space for the mobile toggle button */
+    }
+  }
+}

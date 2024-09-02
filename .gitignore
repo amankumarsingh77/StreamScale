@@ -3,7 +3,6 @@
 /worker/node_modules/
 node_modules/
 
-lambda/
 videos/
 wasp-app/
 demoreact/
