@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import Typography from '@/components/ui/typography'
 import Video from 'next-video'
-import Feature from './feature'
+import Feature from '../feature'
 import {
   Timer,
   Workflow,

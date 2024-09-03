@@ -1,4 +1,4 @@
-const { queueUrl } = require("./awsHandler/constants");
+const { queueUrl, max_running_tasks } = require("./awsHandler/constants");
 const { startECSTask } = require("./awsHandler/ecshandler");
 const { setQueueTask, getRunningTasks } = require("./utils/redis");
 const { deleteSQSMessage } = require("./awsHandler/sqshandler");
@@ -16,7 +16,7 @@ const pollQueue = async () => {
         const s3Bucket = s3Event.Records[0].s3.bucket.name;
         const s3Key = s3Event.Records[0].s3.object.key;
         const runningTasks = await getRunningTasks();
-        if (runningTasks < 2) {
+        if (runningTasks < max_running_tasks) {
           await startECSTask(s3Bucket, s3Key, message.ReceiptHandle);
         } else {
           await setQueueTask(s3Bucket, s3Key, message.ReceiptHandle);

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import '../globals.css'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { Header } from '@/components/common/header'
 import { Footer } from '@/components/common/footer'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from '@/context/AuthContext'
 import { Toaster } from '@/components/ui/toaster'
+import LeftNavBar from '@/components/common/LeftNavBar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -54,6 +55,7 @@ export default function RootLayout({
               <Header />
               <Toaster />
               <div className="flex flex-1 justify-center w-full">
+                {/* <LeftNavBar /> */}
                 <div className="flex w-full max-w-[1280px] h-full">
                   {children}
                 </div>

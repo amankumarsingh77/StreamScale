@@ -1,21 +1,24 @@
 const express = require("express");
+const userController = require("../controllers/userController");
 const { protectedRoute } = require("../middleware/auth");
-const registerController = require("../controllers/auth/register");
-const signInController = require("../controllers/auth/signin");
-const logoutController = require("../controllers/auth/logout");
-const userDataController = require("../controllers/auth/data");
-const updateUserController = require("../controllers/auth/update");
+const validate = require("../middleware/validate");
+const {
+  registerSchema,
+  loginSchema,
+  updateUserSchema,
+} = require("../utils/inputvalidation");
 
 const router = express.Router();
 
-router.post("/signup", registerController);
-
-router.post("/login", signInController);
-
-router.post("/logout", logoutController);
-
-router.get("/me", protectedRoute, userDataController);
-
-router.patch("/update", protectedRoute, updateUserController);
+router.post("/signup", validate(registerSchema), userController.register);
+router.post("/login", validate(loginSchema), userController.login);
+router.post("/logout", userController.logout);
+router.get("/me", protectedRoute, userController.getUserData);
+router.patch(
+  "/update",
+  protectedRoute,
+  validate(updateUserSchema),
+  userController.updateUser
+);
 
 module.exports = router;

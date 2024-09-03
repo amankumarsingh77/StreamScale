@@ -1,0 +1,16 @@
+{
+  "name": "lambda-sqs-s3",
+  "version": "1.0.0",
+  "description": "AWS Lambda function to process S3 events and send messages to SQS",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1351.0",
+    "axios": "^1.7.4"
+  },
+  "author": "",
+  "license": "ISC"
+}

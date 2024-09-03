@@ -21,11 +21,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { instance } from '@/api/apiInstance'
 
-interface ApiResponse {
-  message: string
-  status: number
-}
-
 const FormSchema = z.object({
   username: z
     .string()
@@ -100,6 +95,12 @@ export default function Page() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-2 w-full md:w-1/3"
         >
+          <Typography
+            variant="h2"
+            className="text-center mb-6"
+          >
+            Log In
+          </Typography>
           {SignInItemLists.map((item, index) => (
             <FormField
               key={index}
@@ -129,20 +130,27 @@ export default function Page() {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Submitting...' : 'Submit'}
+            {loading ? 'Submitting...' : 'Login'}
           </Button>
           {error && (
             <div className="text-red-500 text-center mt-2">
               {error}
             </div>
           )}
-          <Typography className="text-center">
-            or
-          </Typography>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
           <Button
-            className="w-full flex justify-center items-center gap-2 py-3 px-4
-              text-gray-900"
+            className="w-full flex justify-center items-center gap-2"
             type="button"
+            variant="outline"
             disabled={true}
           >
             <Image

@@ -3,6 +3,9 @@
 /worker/node_modules/
 node_modules/
 
+videos/
+wasp-app/
+demoreact/
 /test/
 # Ignore build artifacts and distribution directories
 /build/
