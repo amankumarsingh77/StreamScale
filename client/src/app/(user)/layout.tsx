@@ -56,7 +56,7 @@ export default function RootLayout({
               <Toaster />
               <div className="flex flex-1 justify-center w-full">
                 {/* <LeftNavBar /> */}
-                <div className="flex w-full max-w-[1280px] h-full">
+                <div className="flex w-full max-w-[90rem] h-full">
                   {children}
                 </div>
               </div>

@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import Image from 'next/image'
 
 const navItems = [
   { icon: Home, label: 'Dashboard', href: '/dashboard' },
@@ -81,7 +82,7 @@ const LeftNavBar: React.FC = () => {
         <div className="flex items-center justify-between p-4">
           {isExpanded && (
             <div className="flex items-center">
-              <img
+              <Image
                 src="/logo.svg"
                 alt="StreamScale Logo"
                 className="w-8 h-8 mr-2"
