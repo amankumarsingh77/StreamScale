@@ -10,6 +10,7 @@ router.get("/getfile", protectedRoute, fileController.getFile);
 router.get("/hlsurl", fileController.getHlsUrl);
 router.get("/getfiles", protectedRoute, fileController.getUserFiles);
 router.delete("/delete", protectedRoute, fileController.deleteFile);
+router.patch('/:id', protectedRoute, fileController.updateFileDetails);
 router.post(
   "/add",
   protectedRoute,

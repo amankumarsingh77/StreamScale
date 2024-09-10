@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    api_keys: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Keys",
+    },
     message: {
       type: String,
       required: [true, "Message is required"],

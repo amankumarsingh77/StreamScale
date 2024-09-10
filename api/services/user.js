@@ -71,6 +71,30 @@ const isAllowedToUpload = async (userId) => {
   return user.isAllowed;
 };
 
+const getLatestTranscodingTasks = async (userId, limit = 5) => {
+  try {
+    const user = await User.findById(userId).populate({
+      path: "files",
+      options: { sort: { createdAt: -1 }, limit: limit },
+      select: "name status progress createdAt",
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    return user.files.map((file) => ({
+      id: file._id,
+      name: file.name,
+      status: file.status,
+      progress: file.progress || 0,
+      createdAt: file.createdAt,
+    }));
+  } catch (error) {
+    throw new AppError(500, "Error fetching transcoding tasks", error.message);
+  }
+};
+
 module.exports = {
   createUser,
   getUserByUsername,
@@ -80,4 +104,5 @@ module.exports = {
   generateAuthToken,
   isAllowedToUpload,
   isUsernameTaken,
+  getLatestTranscodingTasks,
 };

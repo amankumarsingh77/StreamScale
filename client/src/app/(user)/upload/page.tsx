@@ -27,6 +27,7 @@ import {
   AlertTitle
 } from '@/components/ui/alert'
 import axios from 'axios'
+import LeftNavBar from '@/components/common/LeftNavBar'
 
 interface FileMetadata {
   id: string
@@ -165,8 +166,8 @@ const UploadPage: React.FC = () => {
   return (
     <ProtectedRoute>
       <div className="flex flex-col w-full p-6 space-y-6">
+        <LeftNavBar />
         <Typography variant="h2">Upload Videos</Typography>
-
         <Alert>
           <Info className="h-4 w-4" />
           <AlertTitle>Upload Instructions</AlertTitle>

@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from '@/context/AuthContext'
 import { Toaster } from '@/components/ui/toaster'
 import LeftNavBar from '@/components/common/LeftNavBar'
+import NavBar from '@/components/common/navbar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -49,19 +50,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <main
-              className={`flex min-h-screen flex-col ${inter.className}`}
-            >
+            <div className="flex flex-col min-h-screen">
               <Header />
-              <Toaster />
-              <div className="flex flex-1 justify-center w-full">
-                {/* <LeftNavBar /> */}
-                <div className="flex w-full max-w-[1280px] h-full">
+              <main className="flex flex-1">
+                <div className="container mx-auto px-4 py-8 max-w-7xl">
                   {children}
                 </div>
-              </div>
+              </main>
               <Footer />
-            </main>
+            </div>
+            <Toaster />
           </ThemeProvider>
         </body>
       </AuthProvider>

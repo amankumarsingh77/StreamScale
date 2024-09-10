@@ -18,6 +18,8 @@ export type User = {
   email: string
   fullname: string
   picture: string
+  description: string
+  
 }
 
 interface AuthContextType {

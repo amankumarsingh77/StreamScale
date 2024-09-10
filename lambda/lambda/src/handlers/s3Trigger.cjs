@@ -8,11 +8,16 @@ exports.handler = async (event) => {
     const s3Key = decodeURIComponent(s3Event.object.key.replace(/\+/g, " "));
 
     try {
+      const deduplicationId = `${s3Bucket}-${s3Key.replace(
+        /[^a-zA-Z0-9_.-]/g,
+        "_"
+      )}-${Date.now()}`.slice(0, 128);
       await sqs
         .sendMessage({
           QueueUrl: process.env.SQS_QUEUE_URL,
           MessageBody: JSON.stringify({ s3Bucket, s3Key }),
           MessageGroupId: s3Bucket,
+          MessageDeduplicationId: deduplicationId,
         })
         .promise();
 

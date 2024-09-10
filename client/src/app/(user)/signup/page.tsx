@@ -125,119 +125,118 @@ export default function SignUpPage() {
   }
 
   return (
-    <div
-      className="flex flex-col h-full md:py-36 md:px-32 pt-11 pb-24 px-8
-        w-full items-center gap-12"
-    >
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 w-full max-w-md"
-        >
-          <Typography
-            variant="h2"
-            className="text-center mb-6"
+    <div className="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
           >
-            Sign Up
-          </Typography>
-          {SignUpItemLists.map((item, index) => (
+            <Typography
+              variant="h2"
+              className="text-center mb-6"
+            >
+              Sign Up
+            </Typography>
+            {SignUpItemLists.map((item, index) => (
+              <FormField
+                key={index}
+                control={form.control}
+                name={
+                  item.name as keyof z.infer<
+                    typeof FormSchema
+                  >
+                }
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {item.name.charAt(0).toUpperCase() +
+                        item.name.slice(1)}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type={item.type}
+                        placeholder={item.placeholder}
+                        {...field}
+                      />
+                    </FormControl>
+                    {item.name === 'password' && (
+                      <PasswordStrengthIndicator
+                        password={field.value}
+                      />
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
             <FormField
-              key={index}
               control={form.control}
-              name={
-                item.name as keyof z.infer<
-                  typeof FormSchema
-                >
-              }
+              name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {item.name.charAt(0).toUpperCase() +
-                      item.name.slice(1)}
-                  </FormLabel>
+                  <FormLabel>Message</FormLabel>
                   <FormControl>
-                    <Input
-                      type={item.type}
-                      placeholder={item.placeholder}
+                    <Textarea
+                      placeholder="Why do you want to use this application?"
                       {...field}
                     />
                   </FormControl>
-                  {item.name === 'password' && (
-                    <PasswordStrengthIndicator
-                      password={field.value}
-                    />
-                  )}
                   <FormMessage />
+                  <Typography className="text-gray-500 text-sm mt-1">
+                    ● Transcoding is an expensive job, so we
+                    need to know why you want to use this
+                    application.
+                  </Typography>
                 </FormItem>
               )}
             />
-          ))}
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Message</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Why do you want to use this application?"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-                <Typography className="text-gray-500 text-sm mt-1">
-                  ● Transcoding is an expensive job, so we
-                  need to know why you want to use this
-                  application.
-                </Typography>
-              </FormItem>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
-          />
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <Button
-            className="w-full text-black"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Signup'
-            )}
-          </Button>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+            <Button
+              className="w-full text-black"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Signup'
+              )}
+            </Button>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <Button
-            className="w-full flex justify-center items-center gap-2"
-            type="button"
-            variant="outline"
-            disabled={true}
-          >
-            <Image
-              src="/google.svg"
-              alt="Google"
-              width={20}
-              height={20}
-            />
-            Continue with Google
-          </Button>
-        </form>
-      </Form>
+            <Button
+              className="w-full flex justify-center items-center gap-2"
+              type="button"
+              variant="outline"
+              disabled={true}
+            >
+              <Image
+                src="/google.svg"
+                alt="Google"
+                width={20}
+                height={20}
+              />
+              Continue with Google
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   )
 }

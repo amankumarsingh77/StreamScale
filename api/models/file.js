@@ -29,7 +29,7 @@ const fileSchema = new mongoose.Schema(
     status: {
       type: String,
       required: [true, "File status is required"],
-      enum: ["queued", "transcoding", "done", "failed"],
+      enum: ["QUEUED", "RUNNING", "DONE", "FAILED"],
     },
     uploadId: {
       type: String,
@@ -50,6 +50,7 @@ const fileSchema = new mongoose.Schema(
     category: {
       type: String,
       default: null,
+      enum: ["news", "education", "entertainment", "sports", "technology"],
     },
     tags: {
       type: Array,
@@ -58,6 +59,18 @@ const fileSchema = new mongoose.Schema(
     duration: {
       type: Number,
       default: 0,
+    },
+    videoCodec: {
+      type: String,
+      default: null,
+    },
+    audioCodec: {
+      type: String,
+      default: null,
+    },
+    resolution: {
+      type: String,
+      default: null,
     },
     views: {
       type: Number,

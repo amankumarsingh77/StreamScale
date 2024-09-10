@@ -1,12 +1,12 @@
 import { instance } from '@/api/apiInstance'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 
-interface Config {
+interface Config<T> {
   method: string
   url: string
   headers?: Record<string, string>
   params?: Record<string, any>
-  data?: any
+  data?: T
   onUploadProgress?: (progressEvent: any) => void
 }
 
@@ -15,61 +15,39 @@ interface ApiResponse<T> {
   status: number
   statusText: string
   headers: Record<string, string>
-  config: Config
+  config: Config<T>
   request?: any
 }
 
-export const useApi = <T = any>() => {
-  const [data, setData] = useState<T | null>(null)
+export const useApi = <T = any, R = any>() => {
+  const [data, setData] = useState<R | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
-  const makeRequest = async ({
-    url,
-    method,
-    headers,
-    params,
-    data,
-    onUploadProgress
-  }: Config) => {
+  const makeRequest = useCallback(async (config: Config<T>): Promise<boolean> => {
     setError(null)
     setIsSuccess(false)
     setLoading(true)
-    let success = false
 
     try {
-      const response = await instance({
-        url: `${BASE_URL}${url}`,
-        method,
-        headers,
-        params,
-        data,
-        onUploadProgress
+      const response = await instance<ApiResponse<R>>({
+        ...config,
+        url: `${BASE_URL}${config.url}`,
       })
-      setData(response.data)
+      setData(response.data.data)
       setIsSuccess(true)
-      success = true
+      return true
     } catch (err: any) {
       console.error(err)
       setIsSuccess(false)
-      if (
-        err &&
-        err.response &&
-        err.response.data &&
-        err.response.data.message
-      ) {
-        setError(err.response.data.message)
-      } else {
-        setError(err?.message || 'An error occurred')
-      }
+      setError(err?.response?.data?.message || err?.message || 'An error occurred')
+      return false
     } finally {
       setLoading(false)
     }
-
-    return success
-  }
+  }, [BASE_URL])
 
   return {
     data,

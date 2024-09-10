@@ -30,6 +30,11 @@ export class ViewCounterWorker {
 				await this.flushToMongoDB();
 			}
 			return new Response('OK');
+		} else if (url.pathname === '/views') {
+			const allViews = await this.getAllViews();
+			return new Response(JSON.stringify(allViews), {
+				headers: { 'Content-Type': 'application/json' },
+			});
 		} else if (url.pathname.startsWith('/views/')) {
 			url.pathname = url.pathname.slice(7);
 			const uploadId = url.pathname.match(uploadIdRegex)[1];
@@ -51,6 +56,17 @@ export class ViewCounterWorker {
 	async getViews(uploadId) {
 		const views = (await this.state.storage.get(uploadId)) || 0;
 		return views;
+	}
+
+	async getAllViews() {
+		const allViews = await this.state.storage.list();
+		const result = {};
+		for (const [uploadId, views] of allViews) {
+			if (uploadId !== 'lastFlush') {
+				result[uploadId] = views;
+			}
+		}
+		return result;
 	}
 
 	async flushToMongoDB() {

@@ -100,3 +100,53 @@ exports.addFile = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateFileDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { title, description, category, isPublic, thumbnailUrl } = req.body;
+
+    const updatedFile = await fileService.updateFile(id, {
+      title,
+      description,
+      category,
+      isPublic,
+      thumbnailUrl
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: updatedFile
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateFileStatus = async (req, res) => {
+  try {
+    const { key, status } = req.body;
+
+    if (!key || !status) {
+      return res.status(400).json({
+        status: "error",
+        code: "MISSING_PARAMETERS",
+        message: "Both key and status are required",
+      });
+    }
+
+    await updateFileStatusByPath(key, status);
+
+    return res.status(200).json({
+      status: "success",
+      message: "File status updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating file status:", error);
+    return res.status(500).json({
+      status: "error",
+      code: "INTERNAL_SERVER_ERROR",
+      message: "An unexpected error occurred while updating the file status.",
+    });
+  }
+};

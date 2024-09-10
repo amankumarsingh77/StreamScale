@@ -1,4 +1,3 @@
-// src/services/fileService.js
 const path = require("path");
 const File = require("../models/file");
 const User = require("../models/user");
@@ -10,7 +9,7 @@ const addFile = async (fileData, userId) => {
   const file = new File({
     ...fileData,
     user: userId,
-    status: "queued",
+    status: "QUEUED",
   });
   await file.save();
   await User.findByIdAndUpdate(userId, { $push: { files: file._id } });
@@ -27,6 +26,18 @@ const getFileById = async (fileId) => {
 
 const getFileByPath = async (filePath) => {
   const file = await File.findOne({ path: filePath });
+  if (!file) {
+    throw new AppError(404, "File not found");
+  }
+  return file;
+};
+
+const updateFile = async (fileId, fileData) => {
+  const file = await File.findByIdAndUpdate(
+    fileId,
+    { ...fileData },
+    { new: true, runValidators: true }
+  );
   if (!file) {
     throw new AppError(404, "File not found");
   }
@@ -88,5 +99,6 @@ module.exports = {
   updateFileStatus,
   deleteFile,
   getFilesForUser,
+  updateFile,
   getHlsUrl,
 };

@@ -11,7 +11,9 @@ provider:
     DYNAMODB_TABLE: ${self:custom.dynamoDbTable}
     SQS_QUEUE_URL: https://sqs.ap-south-1.amazonaws.com/851725341790/lambda.fifo
     ECS_CLUSTER_ARN: arn:aws:ecs:ap-south-1:851725341790:cluster/transcode-cluster
-    ECS_TASK_DEFINITION_ARN: arn:aws:ecs:ap-south-1:851725341790:task-definition/transcode-task:9
+    ECS_TASK_DEFINITION_ARN: arn:aws:ecs:ap-south-1:851725341790:task-definition/transcode-task:14
+    # ECS_CLUSTER_ARN: arn:aws:ecs:ap-south-1:851725341790:cluster/demo-ecs-test
+    # ECS_TASK_DEFINITION_ARN: arn:aws:ecs:ap-south-1:851725341790:task-definition/demo-ec2-task-def:2
     ECS_CONTAINER_NAME: transcode-image
     SUBNET_IDS: 'subnet-03b29634c50d3308a,subnet-063434a2a591f4bd9,subnet-04ba037c2ede61e24'
     SECURITY_GROUP_ID: sg-0ab2f27da5b9a9bbe
@@ -22,6 +24,7 @@ provider:
     R2_ENDPOINT: https://c53b46b5dd5b90e69d3b386ace1821fd.r2.cloudflarestorage.com
     R2_CDN_ENDPOINT: https://cdn.streamscale.aksdev.me
     MAX_RUNNING_TASKS: 5
+    MONGO_API_KEY: piS2hTx02vwurjpq93zYnYUcjPzvO3q25Lvnd0ycorXWdPXwwq1DrL6dzlRhJVUw
     SNS_TOPIC_ARN: arn:aws:sns:ap-south-1:851725341790:streamscale-sns
   iamRoleStatements:
     - Effect: Allow

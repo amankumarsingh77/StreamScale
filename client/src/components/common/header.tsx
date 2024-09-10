@@ -16,6 +16,7 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import AvatarDropdown from './avatar-dropdown'
 import { useAuth } from '@/context/AuthContext'
+import NavBar from './navbar'
 
 interface SidebarProps
   extends React.HTMLAttributes<HTMLDivElement> {}
@@ -101,7 +102,7 @@ export function Header({ className }: SidebarProps) {
         className
       )}
     >
-      <div className="w-full max-w-[1280px] md:px-8 px-4">
+      <div className="w-full max-w-[90rem] px-4">
         {/* Desktop */}
         <div className="flex items-center gap-x-8 w-full">
           <div className="md:flex-0 min-w-fit flex-1">
@@ -109,7 +110,7 @@ export function Header({ className }: SidebarProps) {
           </div>
           <div className="hidden md:flex items-center w-full">
             <div className="flex items-center gap-x-8 flex-1">
-              {getHeaderItems()}
+              {!isLogged && getHeaderItems()}
             </div>
             {isLogged ? (
               <div className="flex items-center gap-4">
@@ -119,11 +120,11 @@ export function Header({ className }: SidebarProps) {
                       variant="p"
                       className="text-black"
                     >
-                      Dashboard
+                      Get in touch
                     </Typography>
                   </Button>
                 </Link>
-                <AvatarDropdown />
+                {/* <AvatarDropdown /> */}
               </div>
             ) : (
               getAuthButtons()
@@ -143,7 +144,7 @@ export function Header({ className }: SidebarProps) {
                     </Typography>
                   </Button>
                 </Link>
-                <AvatarDropdown />
+                {/* <AvatarDropdown /> */}
               </div>
             ) : (
               getAuthButtons()
@@ -152,19 +153,21 @@ export function Header({ className }: SidebarProps) {
               <DrawerTrigger asChild>
                 <MenuIcon />
               </DrawerTrigger>
-              <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-64 rounded-none">
-                <div className="mx-auto w-full p-5">
-                  <DrawerHeader>
-                    <DrawerClose asChild>
-                      <div className="w-full flex items-end justify-end">
-                        <X />
-                      </div>
-                    </DrawerClose>
-                  </DrawerHeader>
-                  <div className="p-4 pb-0 space-y-4">
-                    {getHeaderItems()}
-                  </div>
-                </div>
+              <DrawerContent
+                className="h-screen top-0 right-0 left-auto mt-0 w-64 rounded-none
+                  border-l outline-none md:hidden"
+              >
+                <DrawerHeader className="p-0">
+                  <DrawerClose
+                    asChild
+                    className="cursor-pointer"
+                  >
+                    <div className="w-full flex items-end justify-end pt-3 pr-3">
+                      <X />
+                    </div>
+                  </DrawerClose>
+                </DrawerHeader>
+                <NavBar />
               </DrawerContent>
             </Drawer>
           </div>

@@ -36,7 +36,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       throw new AppError(401, "Invalid credentials");
     }
-    const isPasswordValid = await userService.verifyPassword(user, password);
+    const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       throw new AppError(401, "Invalid credentials");
     }
@@ -125,6 +125,36 @@ exports.updateUser = async (req, res, next) => {
       next(error);
     } else {
       next(new AppError(400, "Update failed", error.message));
+    }
+  }
+};
+
+exports.getLatestTranscodingTasks = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 5;
+
+    if (isNaN(limit) || limit < 1) {
+      throw new AppError(400, "Invalid limit parameter");
+    }
+
+    const tasks = await userService.getLatestTranscodingTasks(userId, limit);
+
+    logger.info(`Latest transcoding tasks retrieved for user: ${userId}`);
+    res.status(200).json({
+      status: "success",
+      data: {
+        tasks,
+      },
+    });
+  } catch (error) {
+    logger.error(`Error retrieving latest transcoding tasks: ${error.message}`);
+    if (error instanceof AppError) {
+      next(error);
+    } else {
+      next(
+        new AppError(500, "Failed to retrieve transcoding tasks", error.message)
+      );
     }
   }
 };

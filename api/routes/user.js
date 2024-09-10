@@ -20,5 +20,10 @@ router.patch(
   validate(updateUserSchema),
   userController.updateUser
 );
+router.get(
+  "/latest-transcoding-tasks",
+  protectedRoute,
+  userController.getLatestTranscodingTasks
+);
 
 module.exports = router;
