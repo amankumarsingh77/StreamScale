@@ -111,12 +111,12 @@ exports.updateFileDetails = async (req, res, next) => {
       description,
       category,
       isPublic,
-      thumbnailUrl
+      thumbnailUrl,
     });
 
     res.status(200).json({
-      status: 'success',
-      data: updatedFile
+      status: "success",
+      data: updatedFile,
     });
   } catch (error) {
     next(error);
@@ -147,6 +147,24 @@ exports.updateFileStatus = async (req, res) => {
       status: "error",
       code: "INTERNAL_SERVER_ERROR",
       message: "An unexpected error occurred while updating the file status.",
+    });
+  }
+};
+
+exports.getTopVideosController = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const topVideos = await fileService.getTopViewedVideos(userId);
+    res.status(200).json({
+      status: "success",
+      data: topVideos,
+    });
+  } catch (error) {
+    console.error("Error fetching file :", error);
+    return res.status(500).json({
+      status: "error",
+      code: "INTERNAL_SERVER_ERROR",
+      message: "An unexpected error occurred while fetching the file.",
     });
   }
 };

@@ -92,6 +92,25 @@ const getHlsUrl = (key) => {
   return `${r2.cdnEndpoint}/${pathDir}/master.m3u8`;
 };
 
+const getTopViewedVideos = async (userId) => {
+  const topVideos = await File.aggregate([
+    { $match: { $expr: { $eq: [{ $toString: "$user" }, userId] } } },
+    {
+      $project: {
+        name: 1,
+        views: 1,
+        uploadId: 1,
+        _id: 0,
+      },
+    },
+    { $sort: { views: -1 } },
+    { $limit: 5 },
+  ]);
+  console.log(topVideos);
+
+  return topVideos;
+};
+
 module.exports = {
   addFile,
   getFileById,
@@ -101,4 +120,5 @@ module.exports = {
   getFilesForUser,
   updateFile,
   getHlsUrl,
+  getTopViewedVideos,
 };
