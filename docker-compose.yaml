@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: streamscale_db
+    restart: always
+    environment:
+      POSTGRES_USER: streamscale
+      POSTGRES_PASSWORD: Aman2005
+      POSTGRES_DB: streamscale
+    ports:
+      - "5432:5432"
