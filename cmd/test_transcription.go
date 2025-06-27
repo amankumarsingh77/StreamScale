@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	// Load config
 	cfgFile, err := config.LoadConfig("config.yml")
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -25,18 +24,15 @@ func main() {
 		log.Fatalf("Failed to parse config: %v", err)
 	}
 
-	// Init logger
 	appLogger := logger.NewApiLogger(cfg)
 	appLogger.InitLogger()
 
-	// PostgreSQL
 	psqlDB, err := postgres.NewPsqlDB(cfg)
 	if err != nil {
 		log.Fatalf("PostgreSQL init error: %s", err)
 	}
 	defer psqlDB.Close()
 
-	// AWS S3
 	awsClient, presignClient, err := aws.NewAWSClient(
 		cfg.S3.Endpoint,
 		cfg.S3.Region,
@@ -47,19 +43,16 @@ func main() {
 		log.Fatalf("AWS init error: %s", err)
 	}
 
-	// Initialize repositories
 	awsRepo := repository.NewAwsRepository(awsClient, presignClient)
 	videoRepo := repository.NewVideoRepo(psqlDB)
 
-	// Initialize TranscriptionService
-	language := "hi" // Or change to desired language
-	transcriptionService := worker.NewTranscriptionService(awsRepo, language, appLogger, videoRepo)
+	language := "hi"
+	transcriptionService := worker.NewTranscriptionService(awsRepo, language, appLogger, videoRepo, &cfg.S3)
 
 	appLogger.Info("Transcription service initialized successfully")
 
-	// Example usage (assuming you have a method like Transcribe on the service)
 	ctx := context.Background()
-	videoPath := "./cmd/demo_video.mp4"
+	videoPath := "./cmd/primeagen.mp4"
 	outPutKey := filepath.Join("demo_transcription")
 	start := time.Now()
 	err = transcriptionService.ProcessAudioForTranscription(ctx, videoPath, outPutKey)
@@ -67,5 +60,4 @@ func main() {
 		log.Fatalf("UploadChunks error: %v", err)
 	}
 	log.Printf("It took %v time to transcribe", time.Since(start))
-
 }
