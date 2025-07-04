@@ -5,13 +5,7 @@ import (
 	"github.com/amankumarsingh77/cloud-video-encoder/internal/config"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
-)
-
-const (
-	maxOpenConns    = 60
-	connMaxLifetime = 120
-	maxIdleConns    = 30
-	connMaxIdleTime = 20
+	"time"
 )
 
 func NewPsqlDB(c *config.Config) (*sqlx.DB, error) {
@@ -30,10 +24,30 @@ func NewPsqlDB(c *config.Config) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
 	}
+
+	// Set default values if not provided in config
+	maxOpenConns := c.Postgres.MaxOpenConns
+	if maxOpenConns == 0 {
+		maxOpenConns = 60 // Default value
+	}
+	connMaxLifetime := c.Postgres.ConnMaxLifetime
+	if connMaxLifetime == 0 {
+		connMaxLifetime = 120 // Default value in seconds
+	}
+	maxIdleConns := c.Postgres.MaxIdleConns
+	if maxIdleConns == 0 {
+		maxIdleConns = 30 // Default value
+	}
+	connMaxIdleTime := c.Postgres.ConnMaxIdleTime
+	if connMaxIdleTime == 0 {
+		connMaxIdleTime = 20 // Default value in seconds
+	}
+
 	db.SetMaxOpenConns(maxOpenConns)
-	db.SetConnMaxLifetime(connMaxLifetime)
+	db.SetConnMaxLifetime(time.Duration(connMaxLifetime) * time.Second)
 	db.SetMaxIdleConns(maxIdleConns)
-	db.SetConnMaxIdleTime(connMaxIdleTime)
+	db.SetConnMaxIdleTime(time.Duration(connMaxIdleTime) * time.Second)
+
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping postgres: %w", err)
 	}

@@ -184,16 +184,24 @@ func (w *Worker) runWorker(ctx context.Context, workerID int) {
 				go func() {
 					defer func() { <-w.semaphore }()
 					if err := w.processJob(ctx, workerID, job); err != nil {
-						w.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.JobID, err)
+						w.logger.Errorf("Worker %d failed to process job %s for video %s: %v", workerID, job.JobID, job.VideoID, err)
 					}
 				}()
 			default:
-
+				// Semaphore is full, try to requeue the job to the input channel w.jobs
+				// This is a simple requeue. If w.jobs is also full, it might block or fail.
+				// Adding a timeout to prevent indefinite blocking if the jobs channel is persistently full.
 				select {
 				case w.jobs <- job:
-					w.logger.Infof("Worker %d: Requeued job %s due to full semaphore", workerID, job.JobID)
-				default:
-					w.logger.Warnf("Worker %d: Failed to requeue job %s, channel full", workerID, job.JobID)
+					w.logger.Infof("Worker %d: Requeued job %s for video %s due to full semaphore, job sent back to worker queue.", workerID, job.JobID, job.VideoID)
+				case <-time.After(2 * time.Second): // Timeout for attempting to requeue
+					w.logger.Warnf("Worker %d: Failed to requeue job %s for video %s after 2s timeout; job channel likely full. Job %s may be dropped or delayed significantly.", workerID, job.JobID, job.VideoID, job.JobID)
+					// Potentially, this job could be pushed to a "dead letter" queue or a delayed retry mechanism in a more complex system.
+					// For now, it's logged as a warning.
+				case <-ctx.Done():
+					w.logger.Infof("Worker %d: Context cancelled while attempting to requeue job %s for video %s.", workerID, job.JobID, job.VideoID)
+				case <-w.stopChan:
+					w.logger.Infof("Worker %d: Stop signal received while attempting to requeue job %s for video %s.", workerID, job.JobID, job.VideoID)
 				}
 			}
 		}
@@ -233,18 +241,29 @@ func (w *Worker) processJob(ctx context.Context, workerID int, job *models.Encod
 	processor := NewVideoProcessor(w.cfg, w.awsRepo, w.videoRepo, w.logger, job)
 	result, err := processor.ProcessVideo(ctx, job, videoID)
 	if err != nil {
-		if updateErr := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "failed"); updateErr != nil {
-			w.logger.Errorf("Failed to update job status to failed: %v", updateErr)
+		// Log the main processing error first
+		processingErr := fmt.Errorf("failed to process video %s (job %s): %w", job.VideoID, job.JobID, err)
+		w.logger.Error(processingErr.Error())
+
+		// Attempt to update statuses, logging any errors from these updates
+		// but ensuring the original processing error is returned.
+		if statusUpdateErr := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "failed"); statusUpdateErr != nil {
+			w.logger.Errorf("CRITICAL: Failed to update Redis job status to 'failed' for video %s (job %s) after processing error: %v. Main error: %s", job.VideoID, job.JobID, statusUpdateErr, processingErr)
 		}
 
-		if updateErr := w.videoRepo.UpdateVideoProgress(ctx, videoID, models.JobStatusFailed, 0); updateErr != nil {
-			w.logger.Errorf("Failed to update progress on failure: %v", updateErr)
+		if progressUpdateErr := w.videoRepo.UpdateVideoProgress(ctx, videoID, models.JobStatusFailed, 0); progressUpdateErr != nil {
+			w.logger.Errorf("CRITICAL: Failed to update PostgreSQL video progress to 'failed' for video %s (job %s) after processing error: %v. Main error: %s", videoID, job.JobID, progressUpdateErr, processingErr)
 		}
-		return fmt.Errorf("failed to process video: %w", err)
+		return processingErr // Return the original error that caused the failure
 	}
 
+	// Video processing completed successfully, now update statuses.
+	var finalError error
+
 	if err := w.videoRepo.UpdateVideoProgress(ctx, videoID, models.JobStatusCompleted, 100); err != nil {
-		w.logger.Errorf("Failed to update final progress: %v", err)
+		errMsg := fmt.Sprintf("Failed to update final video progress to 'completed' in PostgreSQL for video %s (job %s): %v", videoID, job.JobID, err)
+		w.logger.Error(errMsg)
+		finalError = fmt.Errorf(errMsg) // Store this error
 	}
 
 	outputPath := job.OutputS3Key
@@ -318,12 +337,44 @@ func (w *Worker) processJob(ctx context.Context, workerID int, job *models.Encod
 	}
 
 	if err := w.videoRepo.CreatePlaybackInfo(ctx, videoID, playbackInfo); err != nil {
-		w.logger.Errorf("Failed to create playback info: %v", err)
-		return fmt.Errorf("failed to create playback info: %w", err)
+		errMsg := fmt.Sprintf("Failed to create playback info in PostgreSQL for video %s (job %s): %v", videoID, job.JobID, err)
+		w.logger.Error(errMsg)
+		// If previous update was successful, this becomes the finalError. Otherwise, append.
+		if finalError == nil {
+			finalError = fmt.Errorf(errMsg)
+		} else {
+			finalError = fmt.Errorf("%v; and %s", finalError, errMsg)
+		}
+		// Also attempt to mark Redis as 'failed' because the job isn't fully complete.
+		if statusUpdateErr := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "failed"); statusUpdateErr != nil {
+			w.logger.Errorf("CRITICAL: Failed to update Redis job status to 'failed' for video %s (job %s) after CreatePlaybackInfo error: %v", job.VideoID, job.JobID, statusUpdateErr)
+		}
 	}
 
-	if err := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "completed"); err != nil {
-		w.logger.Errorf("Failed to update job status to completed: %v", err)
+	// Update Redis status last. If everything above was successful, mark as 'completed'.
+	// If there was an error in PG updates, finalError will be non-nil.
+	// In such case, it's debatable whether to mark Redis as 'completed' or 'failed'.
+	// For now, if finalError is set, we will consider the job not fully completed.
+	if finalError == nil {
+		if err := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "completed"); err != nil {
+			errMsg := fmt.Sprintf("Failed to update final job status to 'completed' in Redis for video %s (job %s): %v", job.VideoID, job.JobID, err)
+			w.logger.Error(errMsg)
+			finalError = fmt.Errorf(errMsg)
+		}
+	} else {
+		// If there was a PG error, ensure Redis is not 'completed'.
+		// It might have been set to 'failed' above if CreatePlaybackInfo failed.
+		// If it's still 'processing', update to 'failed'.
+		currentStatus, _ := w.redisRepo.GetStatus(ctx, job.VideoID, VideoJobsQueue) // Ignoring error for simplicity here
+		if currentStatus != "failed" {
+			if statusUpdateErr := w.redisRepo.UpdateStatus(ctx, job.VideoID, VideoJobsQueue, "failed"); statusUpdateErr != nil {
+				w.logger.Errorf("CRITICAL: Failed to update Redis job status to 'failed' for video %s (job %s) after PostgreSQL update errors: %v. Original PG error: %s", job.VideoID, job.JobID, statusUpdateErr, finalError)
+			}
+		}
+	}
+
+	if finalError != nil {
+		return finalError // Return the collected error(s)
 	}
 
 	w.logger.Infof("Worker %d successfully processed job: %s", workerID, job.JobID)

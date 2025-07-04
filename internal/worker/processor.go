@@ -712,13 +712,13 @@ func (p *videoProcessor) encodeSingleSegmentWithH264Optimized(inputPath, outputP
 
 	encodingArgs := []string{
 		"-c:v", encoder,
-		"-preset", "fast",
+		"-preset", "medium", // Changed from fast to medium for better quality/time balance
 		"-vf", videoFilter,
 		"-b:v", fmt.Sprintf("%dk", preset.Bitrate),
-		"-maxrate", fmt.Sprintf("%dk", int(float64(preset.Bitrate)*1.1)),
-		"-bufsize", fmt.Sprintf("%dk", preset.Bitrate),
-		"-g", "30",
-		"-keyint_min", "30",
+		"-maxrate", fmt.Sprintf("%dk", int(float64(preset.Bitrate)*1.2)), // Slightly higher maxrate
+		"-bufsize", fmt.Sprintf("%dk", preset.Bitrate*2), // Larger buffer
+		"-g", "60", // Standard GOP size based on typical 2s segment for 30fps
+		"-keyint_min", "60",
 		"-sc_threshold", "0",
 		"-avoid_negative_ts", "make_zero",
 		"-fflags", "+genpts",
@@ -734,19 +734,22 @@ func (p *videoProcessor) encodeSingleSegmentWithH264Optimized(inputPath, outputP
 
 	if hwAccel == HWAccelNone {
 		encodingArgs = append(encodingArgs,
-			"-profile:v", "main",
-			"-level", "3.1",
+			"-profile:v", "high", // Changed from main to high
+			"-level", "4.0",      // Adjusted level for broader compatibility with high profile
 			"-threads", fmt.Sprintf("%d", cores),
-			"-x264-params", "ref=1:bframes=0:b-adapt=0:direct=spatial:me=dia:subme=1:trellis=0:rc-lookahead=10",
+			// Adjusted x264-params for better quality than very fast/aggressive settings
+			"-x264-params", "ref=3:bframes=2:b-adapt=1:direct=auto:me=hex:subme=7:trellis=1:rc-lookahead=40",
 		)
 	} else if hwAccel == HWAccelNVENC {
 		encodingArgs = append(encodingArgs,
-			"-profile:v", "main",
-			"-level", "3.1",
-			"-rc", "cbr",
-			"-rc-lookahead", "8",
-			"-surfaces", "8",
-			"-bf", "0",
+			"-profile:v", "high", // Changed from main to high
+			"-level", "4.0",      // Adjusted level
+			"-rc", "vbr",         // Changed from cbr to vbr for better quality
+			"-cq", "23",          // Constant Quality target for VBR
+			"-rc-lookahead", "20", // Adjusted lookahead
+			"-surfaces", "16",     // Adjusted surfaces
+			"-bf", "2",            // Allow B-frames
+			"-b_ref_mode", "middle",
 		)
 	}
 
@@ -773,17 +776,18 @@ func (p *videoProcessor) encodeSingleSegmentWithH264Optimized(inputPath, outputP
 
 func (p *videoProcessor) encodeSingleSegmentWithSVTAV1Optimized(inputPath, outputPath string, preset QualityPreset) error {
 	cores := runtime.NumCPU()
-	svtPreset := "10"
-
-	switch {
-	case cores >= 32:
-		svtPreset = "8"
-	case cores >= 16:
-		svtPreset = "9"
-	case cores >= 8:
-		svtPreset = "10"
-	default:
-		svtPreset = "11"
+	// Adjusted SVT-AV1 preset for a better balance. Lower is better quality but slower.
+	// Presets range from 0 (slowest, best quality) to 13 (fastest, lowest quality).
+	// Targeting a preset around 8-10 for a good balance.
+	// The original logic was: 32+ cores -> 8, 16-31 cores -> 9, 8-15 cores -> 10, <8 cores -> 11
+	// Let's adjust this to be slightly more quality focused:
+	svtPreset := "10" // Default for fewer cores
+	if cores >= 32 {
+		svtPreset = "7" // Higher quality for many cores
+	} else if cores >= 16 {
+		svtPreset = "8" // Good balance for 16+ cores
+	} else if cores >= 8 {
+		svtPreset = "9" // Reasonable for 8+ cores
 	}
 
 	args := []string{
@@ -792,15 +796,18 @@ func (p *videoProcessor) encodeSingleSegmentWithSVTAV1Optimized(inputPath, outpu
 		"-loglevel", "error",
 		"-i", inputPath,
 		"-c:v", "libsvtav1",
-		"-preset", svtPreset,
+		"-preset", svtPreset, // Uses the adjusted preset
 		"-vf", fmt.Sprintf("scale=%d:%d", preset.Resolution[0], preset.Resolution[1]),
-		"-crf", "32",
-		"-maxrate", fmt.Sprintf("%dk", int(float64(preset.Bitrate)*1.1)),
-		"-bufsize", fmt.Sprintf("%dk", preset.Bitrate),
-		"-g", "120",
-		"-keyint_min", "120",
-		"-tile-columns", "4",
-		"-tile-rows", "2",
+		"-crf", "30", // Lowered CRF for better quality (was 32)
+		"-maxrate", fmt.Sprintf("%dk", int(float64(preset.Bitrate)*1.2)), // Slightly higher maxrate
+		"-bufsize", fmt.Sprintf("%dk", preset.Bitrate*2), // Larger buffer
+		"-g", "240", // Standard GOP size, can be ~10 seconds for 24-30fps.
+		"-keyint_min", "240",
+		// Tile columns/rows depend on resolution and preset, these are common starting points
+		// For higher resolutions and faster presets, more tiles can be beneficial.
+		// Let's make it dynamic based on cores, similar to svt-av1-ffmpeg examples
+		"-tile-columns", fmt.Sprintf("%d", getTileCount(cores, preset.Resolution[0])),
+		"-tile-rows", "1", // Often 0 or 1 for better compression efficiency with multiple tile columns
 		"-avoid_negative_ts", "make_zero",
 		"-fflags", "+genpts",
 		"-async", "1",
@@ -827,6 +834,28 @@ func (p *videoProcessor) encodeSingleSegmentWithSVTAV1Optimized(inputPath, outpu
 	}
 
 	return nil
+}
+
+// getTileCount determines the number of tile columns for SVT-AV1 encoding
+// based on number of cores and video width.
+// This is a heuristic and might need further tuning based on specific content and hardware.
+// Reference: SVT-AV1 documentation suggests tile parallelism benefits from more cores.
+func getTileCount(cores int, width int) int {
+	if width >= 3840 { // 4K
+		if cores >= 16 {
+			return 4 // Maximize parallelism for 4K on many cores
+		} else if cores >= 8 {
+			return 2
+		}
+		return 1
+	} else if width >= 1920 { // 1080p
+		if cores >= 8 {
+			return 2
+		}
+		return 1
+	}
+	// For lower resolutions, fewer tiles are generally better for compression efficiency.
+	return 0 // SVT-AV1 default (usually 0 or 1 based on preset)
 }
 
 func (p *videoProcessor) uploadProcessedFiles(ctx context.Context, outputPath, outputKey string) error {

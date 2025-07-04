@@ -46,10 +46,14 @@ type Session struct {
 type DBConfig struct {
 	Host     string
 	Port     int
-	User     string
-	Password string
-	Name     string
-	PgDriver string
+	User            string
+	Password        string
+	Name            string
+	PgDriver        string
+	MaxOpenConns    int `mapstructure:"max_open_conns"`
+	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`
+	MaxIdleConns    int `mapstructure:"max_idle_conns"`
+	ConnMaxIdleTime int `mapstructure:"conn_max_idle_time"`
 }
 
 type Cookie struct {
